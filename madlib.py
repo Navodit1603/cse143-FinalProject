@@ -7,7 +7,7 @@ import random as rand
 from heapq import nlargest
 
 # define tagger
-def tagger(tokens):
+def pos_tag(tokens):
     return tk.pos_tag(tokens)
 
 # list of parts of speech (from Penn Treebase tagset) useable for madlib replacement
@@ -22,18 +22,15 @@ pos_names = {
     'VBD': 'Past tense verb',
 }
 
-punctuation = ['.', ',', ':', '!', '?'] 
+punctuation = ['.', ',', ':', '!', '?']
 
 # read rate my professor data
 path = "./rmp.csv"
 data = pd.read_csv(path)
 reviews = data['comments']
-
-# pick random review
-text = "No Comments"
-while text == "No Comments":
-    rev_idx = np.floor(rand.random() * len(reviews))
-    text = reviews[rev_idx]
+names = data['professor_name']
+schools = data['school_name']
+scores = data['star_rating']
 
 def split_into_sentences(paragraph):
     # Regular expression pattern
@@ -63,72 +60,78 @@ def tf_idf(t, d):
     # computes tf-idf for term t in document d
     return tf(t, d) * idf(t)
 
-def replace_words(tagged_line, replaceable):
+def replace_words(text, tagged_line, replaceable):
+    # text: the original input string
+    # tagged_line: a list of tuples containing (word, pos) for each token in the input
+    # replaceable: a list of tuples (word, pos) for each pos in the set of replaceable pos
+    # returns: a modified tagged_line with certain words replaced with user input
     if len(replaceable) > 0:
         # create dictionary mapping each word to its tf-idf
         importance = {}
         for (word, pos) in replaceable:
             importance[word] = tf_idf(word, tagged_line)
-
-        
+    
         to_replace = []
         # compile a list of all replaceable words in each sentence
-        # pick one or two words with the highest importance to replace
+        # pick approx 40% of words with the highest importance to replace
         for line in split_into_sentences(text):
             line_replace = {}
             for i in range(len(replaceable)):
                 if replaceable[i][0] in str(line).lower():
                     line_replace[replaceable[i]] = importance[replaceable[i][0]]
             
-            keys = list(line_replace.keys())
-            values = list(line_replace.values())
-            sorted_value_index = np.argsort(values)
-            sorted_dict = {keys[i]: values[i] for i in sorted_value_index}
-
-            if len(sorted_dict) > 0:
-                # replace approx 30% of replaceable words
-                n = int(np.floor(len(sorted_dict) * 0.3))
+            if len(line_replace) > 0:
+                # replace approx 40% of replaceable words
+                n = int(np.floor(len(line_replace) * 0.4))
                 if n == 0: n = 1
                 for i in range(n):
-                    to_replace.append(max(sorted_dict, key=sorted_dict.get))
-                    sorted_dict.pop(to_replace[len(to_replace) - 1])
+                    # rule eliminates replacement of "lot" with a noun, which tends to not make sense
+                    if max(line_replace, key=line_replace.get) == "lot":
+                        line_replace.pop(to_replace[len(to_replace) - 1])
+                    to_replace.append(max(line_replace, key=line_replace.get))
+                    line_replace.pop(to_replace[len(to_replace) - 1])
 
+        # take user input
         for (og_word, pos) in to_replace:
             word = input(pos_names[pos] + ": ")
             for i in range(len(tagged_line)):
                 if tagged_line[i] == (og_word, pos):
-                    tagged_line[i] = (word.upper(), pos) 
-
+                    tagged_line[i] = (word.upper(), pos)
 
     return tagged_line
 
+def __main__():
+    # pick random review
+    text = "No Comments"
+    while text == "No Comments":
+        rev_idx = np.floor(rand.random() * len(reviews))
+        text = reviews[rev_idx]
 
+    professor = names[rev_idx]
+    school = schools[rev_idx]
+    score = scores[rev_idx]
 
-output = ""
+    output = ""
 
-# take out one word in each sentence
-#for line in split_into_sentences(text):
-for i in range(1):
-    line = text
-    tokens = tk.word_tokenize(line)
-    tagged_line = tagger(tokens)
-
+    tokens = tk.word_tokenize(text)
+    tagged_line = pos_tag(tokens)
     replaceable = []
     for i in range(len(tagged_line)):
         if tagged_line[i][1] in madlib_pos:
             replaceable.append(tagged_line[i])
-    
 
-    tags = replace_words(tagged_line, replaceable)
+    tags = replace_words(text, tagged_line, replaceable)
 
-    # construct new sentence
-    output_sentence = ""
+    # rebuild text with new tags
+    prev_token = None
     for i in range(len(tags)):
-        if tags[i][0] not in punctuation:
-            output_sentence += " "
-        output_sentence += (tags[i][0])
-    output += output_sentence
+        if prev_token is not None and tags[i][0] not in punctuation and "'" not in tags[i][0]:
+            output += ' '
+        output += tags[i][0]
+        prev_token = tags[i][0]
 
-print("Original:\n", text)
+    #print("Original:\n", text)
+    #print("Madlib:\n", output)
+    print("\n{0}, {1}:\n{2}\n{3}/5".format(professor, school, output, score))
 
-print("Madlib:\n ", output)
+__main__()
