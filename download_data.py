@@ -35,32 +35,6 @@ def main():
     print('Finished downloading all data.')
 
 
-def roc_download_instructions(directory=SENTENCES_DIR, subdirectory='roc'):
-    pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
-
-    print('For the ROCStories dataset, please download the files manually.')
-    print('Here are the Google Drive links to each file:')
-    print(' - https://drive.google.com/file/d/1LoLfsRHwwEFbnyW8qJ9aZS5IYiRRZWDS/view?usp=sharing')
-    print(' - https://drive.google.com/file/d/1iIMKXGwHlMtXwE-35LVkaiNo4rQ3RriK/view?usp=sharing')
-    print('Please place each file in \'./data/roc_stories\', and preserve the original file name.')
-
-
-def download_roc_stories(directory=SENTENCES_DIR, subdirectory='roc_stories'):
-    outfilename1 = 'roc_stories_train.csv'
-    outfilename2 = 'roc_stories_test.csv'
-    pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
-    
-    response = requests.get('https://drive.usercontent.google.com/uc?id=1LoLfsRHwwEFbnyW8qJ9aZS5IYiRRZWDS&export=download', stream=True)
-    with open(f'{directory}/{subdirectory}/{outfilename1}', 'wb') as out_file:
-        for data in tqdm(response.iter_content()):
-            out_file.write(data)
-    
-    response = requests.get('https://drive.usercontent.google.com/uc?id=1iIMKXGwHlMtXwE-35LVkaiNo4rQ3RriK&export=download', stream=True)
-    with open(f'{directory}/{subdirectory}/{outfilename2}', 'wb') as out_file:
-        for data in tqdm(response.iter_content()):
-            out_file.write(data)
-
-
 def download_aesop_fables(directory=SENTENCES_DIR, subdirectory='aesop_fables'):
     outfilename = 'Aesop Fables.json'
     pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
@@ -70,32 +44,6 @@ def download_aesop_fables(directory=SENTENCES_DIR, subdirectory='aesop_fables'):
     with open(f'{kaggle_path}/{outfilename}', 'rb') as in_file:
         with open(f'{directory}/{subdirectory}/{outfilename}', 'wb') as out_file:
             out_file.writelines(in_file.readlines())
-
-
-def download_children_stories(directory=SENTENCES_DIR, subdirectory='children_stories'):
-    outfilename1 = 'children_books.csv'
-    outfilename2 = 'children_stories.Csv'
-    pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
-
-    kaggle_path = kagglehub.dataset_download('thomaskonstantin/highly-rated-children-books-and-stories')
-    
-    with open(f'{kaggle_path}/{outfilename1}', 'rb') as in_file:
-        with open(f'{directory}/{subdirectory}/{outfilename1}', 'wb') as out_file:
-            out_file.writelines(in_file.readlines())
-    
-    with open(f'{kaggle_path}/{outfilename2}', 'rb') as in_file:
-        with open(f'{directory}/{subdirectory}/{outfilename2}', 'wb') as out_file:
-            out_file.writelines(in_file.readlines())
-
-
-def download_rate_my_prof(directory=SENTENCES_DIR, subdirectory='rate_my_professor'):
-    outfilename='rmf.csv'
-    pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
-    
-    response = requests.get('https://data.mendeley.com/public-files/datasets/fvtfjyvw7d/files/256a4429-4fc3-4872-9a7c-26b44a820a8c/file_downloaded', stream=True)
-    with open(f'{directory}/{subdirectory}/{outfilename}', 'wb') as out_file:
-        for data in tqdm(response.iter_content()):
-            out_file.write(data)
 
 
 def download_miller_center(directory=SENTENCES_DIR, subdirectory='miller_center'):
@@ -131,6 +79,58 @@ def download_miller_center(directory=SENTENCES_DIR, subdirectory='miller_center'
             transcript_str = ''.join(transcript)
             
             out_file.write(transcript_str)
+
+
+def download_rate_my_prof(directory=SENTENCES_DIR, subdirectory='rate_my_professor'):
+    outfilename='rmf.csv'
+    pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
+    
+    response = requests.get('https://data.mendeley.com/public-files/datasets/fvtfjyvw7d/files/256a4429-4fc3-4872-9a7c-26b44a820a8c/file_downloaded', stream=True)
+    with open(f'{directory}/{subdirectory}/{outfilename}', 'wb') as out_file:
+        for data in tqdm(response.iter_content()):
+            out_file.write(data)
+
+
+def roc_download_instructions(directory=SENTENCES_DIR, subdirectory='roc'):
+    pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
+
+    print('For the ROCStories dataset, please download the files manually.')
+    print('Here are the Google Drive links to each file:')
+    print(' - https://drive.google.com/file/d/1LoLfsRHwwEFbnyW8qJ9aZS5IYiRRZWDS/view?usp=sharing')
+    print(' - https://drive.google.com/file/d/1iIMKXGwHlMtXwE-35LVkaiNo4rQ3RriK/view?usp=sharing')
+    print('Please place each file in \'./data/roc_stories\', and preserve the original file name.')
+
+
+def download_roc_stories(directory=SENTENCES_DIR, subdirectory='roc_stories'):
+    outfilename1 = 'roc_stories_train.csv'
+    outfilename2 = 'roc_stories_test.csv'
+    pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
+    
+    response = requests.get('https://drive.usercontent.google.com/uc?id=1LoLfsRHwwEFbnyW8qJ9aZS5IYiRRZWDS&export=download', stream=True)
+    with open(f'{directory}/{subdirectory}/{outfilename1}', 'wb') as out_file:
+        for data in tqdm(response.iter_content()):
+            out_file.write(data)
+    
+    response = requests.get('https://drive.usercontent.google.com/uc?id=1iIMKXGwHlMtXwE-35LVkaiNo4rQ3RriK&export=download', stream=True)
+    with open(f'{directory}/{subdirectory}/{outfilename2}', 'wb') as out_file:
+        for data in tqdm(response.iter_content()):
+            out_file.write(data)
+
+
+def download_children_stories(directory=SENTENCES_DIR, subdirectory='children_stories'):
+    outfilename1 = 'children_books.csv'
+    outfilename2 = 'children_stories.Csv'
+    pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
+
+    kaggle_path = kagglehub.dataset_download('thomaskonstantin/highly-rated-children-books-and-stories')
+    
+    with open(f'{kaggle_path}/{outfilename1}', 'rb') as in_file:
+        with open(f'{directory}/{subdirectory}/{outfilename1}', 'wb') as out_file:
+            out_file.writelines(in_file.readlines())
+    
+    with open(f'{kaggle_path}/{outfilename2}', 'rb') as in_file:
+        with open(f'{directory}/{subdirectory}/{outfilename2}', 'wb') as out_file:
+            out_file.writelines(in_file.readlines())
 
 
 if __name__ == '__main__':
