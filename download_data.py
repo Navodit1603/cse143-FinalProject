@@ -4,7 +4,9 @@ import requests
 import json
 from tqdm import tqdm
 
+
 SENTENCES_DIR = './data/sentences'
+
 
 def main():
     pathlib.Path(SENTENCES_DIR).mkdir(parents=True, exist_ok=True)
@@ -16,6 +18,16 @@ def main():
     print('Started miller center...')
     download_miller_center()
     print('Finished miller center.')
+
+
+def download_rate_my_prof(directory=SENTENCES_DIR, subdirectory='rate_my_professor', name='rmf.csv'):
+    pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
+    
+    response = requests.get('https://data.mendeley.com/public-files/datasets/fvtfjyvw7d/files/256a4429-4fc3-4872-9a7c-26b44a820a8c/file_downloaded', stream=True)
+    with open(f'{directory}/{subdirectory}/{name}', 'wb') as out_file:
+        for data in tqdm(response.iter_content()):
+            out_file.write(data)
+
 
 def download_miller_center(directory=SENTENCES_DIR, subdirectory='miller_center', name='speeches.txt'):
     pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
@@ -66,13 +78,6 @@ def download_miller_center(directory=SENTENCES_DIR, subdirectory='miller_center'
             out_file.write(transcript_str)
             out_file.write('\n')
 
-def download_rate_my_prof(directory=SENTENCES_DIR, subdirectory='rate_my_professor', name='rmf.csv'):
-    pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
-    
-    response = requests.get('https://data.mendeley.com/public-files/datasets/fvtfjyvw7d/files/256a4429-4fc3-4872-9a7c-26b44a820a8c/file_downloaded', stream=True)
-    with open(f'{directory}/{subdirectory}/{name}', 'wb') as out_file:
-        for data in tqdm(response.iter_content()):
-            out_file.write(data)
 
 if __name__ == '__main__':
     main()
