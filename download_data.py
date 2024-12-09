@@ -11,25 +11,25 @@ SENTENCES_DIR = './data/sentences'
 def main():
     pathlib.Path(SENTENCES_DIR).mkdir(parents=True, exist_ok=True)
 
-    print('Started aesop fables...')
+    print('Started Aesop Fables...')
     download_aesop_fables()
-    print('Finished aesop fables.')
+    print('Finished Aesop Fables.')
     print()
 
-    print('Started rate my professor...')
+    print('Started RateMyProfessor...')
     download_rate_my_prof()
-    print('Finished rate my professor.')
+    print('Finished RateMyProfessor.')
     print()
 
-    print('Started miller center...')
+    print('Started Miller Center...')
     download_miller_center()
-    print('Finished miller center.')
+    print('Finished Miller Center.')
     print()
 
     # roc_download_instructions()
-    print('Started roc stories...')
+    print('Started ROCStories...')
     download_roc_stories()
-    print('Finished roc stories.')
+    print('Finished ROCStories.')
     print()
 
     print('Finished downloading all data.')

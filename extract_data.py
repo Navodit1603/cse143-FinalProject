@@ -11,9 +11,9 @@ EXTRACTED_SENTENCES_DIR = './data_extracted/sentences'
 def main():
     pathlib.Path(EXTRACTED_SENTENCES_DIR).mkdir(parents=True, exist_ok=True)
     
-    print('Started extracting roc stories...')
+    print('Started extracting ROCStories...')
     extract_roc_stories()
-    print('Finished extracting roc stories.')
+    print('Finished extracting ROCStories.')
 
 
 def extract_roc_stories(original_directory=ORIGINAL_SENTENCES_DIR, extracted_directory=EXTRACTED_SENTENCES_DIR, subdirectory='roc_stories'):
