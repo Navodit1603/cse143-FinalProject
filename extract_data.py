@@ -3,6 +3,7 @@ import csv
 import json
 import pathlib
 from tqdm import tqdm
+from unidecode import unidecode
 
 
 ORIGINAL_SENTENCES_DIR = './data/sentences'
@@ -12,25 +13,29 @@ EXTRACTED_SENTENCES_DIR = './data_extracted/sentences'
 def main():
     pathlib.Path(EXTRACTED_SENTENCES_DIR).mkdir(parents=True, exist_ok=True)
     
-    print('Started extracting Aesop Fables...')
-    extract_aesop_fables()
-    print('Finished extracting Aesop Fables.')
-    print()
+    # print('Started extracting Aesop Fables...')
+    # extract_aesop_fables()
+    # print('Finished extracting Aesop Fables.')
+    # print()
 
     print('Started extracting Miller Center...')
     extract_miller_center()
     print('Finished extracting Miller Center.')
     print()
 
-    print('Started extracting RateMyProfessor...')
-    extract_rate_my_professor()
-    print('Finished extracting RateMyProfessor.')
-    print()
+    # with open(f'{EXTRACTED_SENTENCES_DIR}/miller_center/miller_center.txt', 'r') as in_file:
+    #     bruh = in_file.readlines()
+    #     print(bruh[0])
+
+    # print('Started extracting RateMyProfessor...')
+    # extract_rate_my_professor()
+    # print('Finished extracting RateMyProfessor.')
+    # print()
     
-    print('Started extracting ROCStories...')
-    extract_roc_stories()
-    print('Finished extracting ROCStories.')
-    print()
+    # print('Started extracting ROCStories...')
+    # extract_roc_stories()
+    # print('Finished extracting ROCStories.')
+    # print()
 
 
 def extract_aesop_fables(original_directory=ORIGINAL_SENTENCES_DIR, extracted_directory=EXTRACTED_SENTENCES_DIR, subdirectory='aesop_fables'):
@@ -55,13 +60,23 @@ def extract_aesop_fables(original_directory=ORIGINAL_SENTENCES_DIR, extracted_di
 
 def extract_miller_center(original_directory=ORIGINAL_SENTENCES_DIR, extracted_directory=EXTRACTED_SENTENCES_DIR, subdirectory='miller_center'):
     pathlib.Path(f'{extracted_directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
-    infilename1 = 'speeches.txt'
-    outfilename1 = 'miller_center.txt'
+    infilename1 = 'speeches.json'
+    outfilename1 = 'miller_center.csv'
+
+    csv_data = []
 
     with open(f'{original_directory}/{subdirectory}/{infilename1}', 'r') as in_file:
-        with open(f'{extracted_directory}/{subdirectory}/{outfilename1}', 'w') as out_file:
-            for line in in_file.readlines():
-                new_line = line \
+            json_file = json.load(in_file)
+
+            for speech in json_file:
+                transcript: list[str] = list(speech['transcript'])
+
+                for i in range(0, len(transcript)):
+                    if ord(transcript[i]) < 32 or ord(transcript[i]) == 127:
+                        transcript[i] = ' '
+
+                transcript_str = unidecode(''.join(transcript)) \
+                    .replace('\n', ' ') \
                     .replace('<p class="p1">', '') \
                     .replace('<p class="p2">', '') \
                     .replace('<span class="s1">', '') \
@@ -95,10 +110,24 @@ def extract_miller_center(original_directory=ORIGINAL_SENTENCES_DIR, extracted_d
                     .replace('   ', ' ') \
                     .replace('  ', ' ')
 
-                if new_line[0] == ' ':
-                    new_line = new_line[1:]
+                if transcript_str[0] == ' ':
+                    transcript_str = transcript_str[1:]
                 
-                out_file.write(new_line)
+                president_str = unidecode(speech['president'])
+                date_str = unidecode(speech['date'])
+                title_str = unidecode(speech['title'])
+
+                csv_data.append({
+                    'president': president_str,
+                    'date': date_str,
+                    'title': title_str,
+                    'transcript': transcript_str
+                })
+    
+    with open(f'{extracted_directory}/{subdirectory}/{outfilename1}', 'w') as out_file:
+        csv_writer = csv.DictWriter(out_file, fieldnames=['president', 'date', 'title', 'transcript'])
+        csv_writer.writeheader()
+        csv_writer.writerows(csv_data)
 
 
 def extract_rate_my_professor(original_directory=ORIGINAL_SENTENCES_DIR, extracted_directory=EXTRACTED_SENTENCES_DIR, subdirectory='rate_my_professor'):

@@ -1,4 +1,5 @@
 
+import json
 import pathlib
 import requests
 from tqdm import tqdm
@@ -47,7 +48,7 @@ def download_aesop_fables(directory=SENTENCES_DIR, subdirectory='aesop_fables'):
 
 
 def download_miller_center(directory=SENTENCES_DIR, subdirectory='miller_center'):
-    outfilename='speeches.txt'
+    outfilename='speeches.json'
     pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
 
     the_url = 'https://api.millercenter.org/speeches'
@@ -63,22 +64,23 @@ def download_miller_center(directory=SENTENCES_DIR, subdirectory='miller_center'
         items += data['Items']
         print(f'{len(items)} speeches')
     
-    with open(f'{directory}/{subdirectory}/{outfilename}', "w") as out_file:
-        is_first_line = True
-        for item in items:
-            if is_first_line:
-                is_first_line = False
-            else:
-                out_file.write('\n')
+    with open(f'{directory}/{subdirectory}/{outfilename}', 'w') as out_file:
+        out_file.write(json.dumps(items))
+        # is_first_line = True
+        # for item in items:
+        #     if is_first_line:
+        #         is_first_line = False
+        #     else:
+        #         out_file.write('\n')
 
-            transcript: list[str] = list(item['transcript'])
-            for i in range(0, len(transcript)):
-                if ord(transcript[i]) < 32 or ord(transcript[i]) == 127:
-                    transcript[i] = ' '
+        #     transcript: list[str] = list(item['transcript'])
+        #     for i in range(0, len(transcript)):
+        #         if ord(transcript[i]) < 32 or ord(transcript[i]) == 127:
+        #             transcript[i] = ' '
 
-            transcript_str = ''.join(transcript)
+        #     transcript_str = ''.join(transcript)
             
-            out_file.write(transcript_str)
+        #     out_file.write(transcript_str)
 
 
 def download_rate_my_prof(directory=SENTENCES_DIR, subdirectory='rate_my_professor'):

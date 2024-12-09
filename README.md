@@ -13,10 +13,11 @@ The following pip packages are required:
  - nltk
  - pandas
  - numpy
+ - unidecode
 
 These can be installed by running:
 ```
-pip install requests kagglehub tqdm nltk pandas numpy
+pip install requests kagglehub tqdm nltk pandas numpy unidecode
 ```
 
 ### nltk Resources
