@@ -1,5 +1,4 @@
 
-import io
 import pathlib
 import requests
 from tqdm import tqdm
@@ -12,25 +11,25 @@ SENTENCES_DIR = './data/sentences'
 def main():
     pathlib.Path(SENTENCES_DIR).mkdir(parents=True, exist_ok=True)
 
-    print('Started aesop fables...')
+    print('Started Aesop Fables...')
     download_aesop_fables()
-    print('Finished aesop fables.')
+    print('Finished Aesop Fables.')
     print()
 
-    print('Started rate my professor...')
-    download_rate_my_prof()
-    print('Finished rate my professor.')
-    print()
-
-    print('Started miller center...')
+    print('Started Miller Center...')
     download_miller_center()
-    print('Finished miller center.')
+    print('Finished Miller Center.')
+    print()
+
+    print('Started RateMyProfessor...')
+    download_rate_my_prof()
+    print('Finished RateMyProfessor.')
     print()
 
     # roc_download_instructions()
-    print('Started roc stories...')
+    print('Started ROCStories...')
     download_roc_stories()
-    print('Finished roc stories.')
+    print('Finished ROCStories.')
     print()
 
     print('Finished downloading all data.')
@@ -43,12 +42,12 @@ def roc_download_instructions(directory=SENTENCES_DIR, subdirectory='roc'):
     print('Here are the Google Drive links to each file:')
     print(' - https://drive.google.com/file/d/1LoLfsRHwwEFbnyW8qJ9aZS5IYiRRZWDS/view?usp=sharing')
     print(' - https://drive.google.com/file/d/1iIMKXGwHlMtXwE-35LVkaiNo4rQ3RriK/view?usp=sharing')
-    print('Please place each file in \'./data/roc\', and preserve the original file name.')
+    print('Please place each file in \'./data/roc_stories\', and preserve the original file name.')
 
 
-def download_roc_stories(directory=SENTENCES_DIR, subdirectory='roc'):
-    outfilename1='roc_stories_train.csv'
-    outfilename2='roc_stories_test.csv'
+def download_roc_stories(directory=SENTENCES_DIR, subdirectory='roc_stories'):
+    outfilename1 = 'roc_stories_train.csv'
+    outfilename2 = 'roc_stories_test.csv'
     pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
     
     response = requests.get('https://drive.usercontent.google.com/uc?id=1LoLfsRHwwEFbnyW8qJ9aZS5IYiRRZWDS&export=download', stream=True)
@@ -117,37 +116,21 @@ def download_miller_center(directory=SENTENCES_DIR, subdirectory='miller_center'
         print(f'{len(items)} speeches')
     
     with open(f'{directory}/{subdirectory}/{outfilename}', "w") as out_file:
+        is_first_line = True
         for item in items:
+            if is_first_line:
+                is_first_line = False
+            else:
+                out_file.write('\n')
+
             transcript: list[str] = list(item['transcript'])
             for i in range(0, len(transcript)):
                 if ord(transcript[i]) < 32 or ord(transcript[i]) == 127:
                     transcript[i] = ' '
 
-            transcript_str = ''.join(transcript) \
-                .replace('<p class="p1">', '') \
-                .replace('<span class="s1">', '') \
-                .replace('</span>', '') \
-                .replace('<br>', ' ') \
-                .replace('&nbsp;', ' ') \
-                .replace('/p&gt;', '') \
-                .replace('&gt;', '') \
-                .replace('&#39;', '\'') \
-                .replace('&amp;', '&') \
-                .replace('&quot;', '') \
-                .replace('&mdash;', '') \
-                .replace('&deg;', '') \
-                .replace('&rdquo;', '') \
-                .replace('&rsquo;', '') \
-                .replace('&ldquo', '') \
-                .replace('&ndash;', '') \
-                .replace('&frac12;', '') \
-                .replace('&c.;', '') \
-                .replace('&c.', '.') \
-                .replace('<em>', '') \
-                .replace('</em>', '')
+            transcript_str = ''.join(transcript)
             
             out_file.write(transcript_str)
-            out_file.write('\n')
 
 
 if __name__ == '__main__':

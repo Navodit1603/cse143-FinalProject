@@ -25,7 +25,7 @@ pos_names = {
 punctuation = ['.', ',', ':', '!', '?']
 
 # read rate my professor data
-path = "./rmp.csv"
+path = "./data_extracted/sentences/rate_my_professor/rate_my_professor.csv"
 data = pd.read_csv(path)
 reviews = data['comments']
 names = data['professor_name']
