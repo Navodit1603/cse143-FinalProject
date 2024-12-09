@@ -9,6 +9,10 @@ SENTENCES_DIR = './data/sentences'
 def main():
     pathlib.Path(SENTENCES_DIR).mkdir(parents=True, exist_ok=True)
 
+    print('Started rate my professor...')
+    download_rate_my_prof()
+    print('Finished rate my professor.')
+
     print('Started miller center...')
     download_miller_center()
     print('Finished miller center.')
@@ -27,7 +31,7 @@ def download_miller_center(directory=SENTENCES_DIR, subdirectory='miller_center'
         request = requests.post(url=the_url, params=parameters)
         data = request.json()
         items += data['Items']
-        # print(f'{len(items)} speeches')
+        print(f'{len(items)} speeches')
     
     with open(f'{directory}/{subdirectory}/{name}', "w") as out_file:
         for item in items:
@@ -62,9 +66,13 @@ def download_miller_center(directory=SENTENCES_DIR, subdirectory='miller_center'
             out_file.write(transcript_str)
             out_file.write('\n')
 
-def download_rate_my_prof(directory=SENTENCES_DIR, name='rmf.csv'):
-    r: requests.Response = requests.get('https://data.mendeley.com/public-files/datasets/fvtfjyvw7d/files/256a4429-4fc3-4872-9a7c-26b44a820a8c/file_downloaded')
-    print(len(r.content))
+def download_rate_my_prof(directory=SENTENCES_DIR, subdirectory='rate_my_professor', name='rmf.csv'):
+    pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
+    
+    response = requests.get('https://data.mendeley.com/public-files/datasets/fvtfjyvw7d/files/256a4429-4fc3-4872-9a7c-26b44a820a8c/file_downloaded', stream=True)
+    with open(f'{directory}/{subdirectory}/{name}', 'wb') as out_file:
+        for data in tqdm(response.iter_content()):
+            out_file.write(data)
 
 if __name__ == '__main__':
     main()
