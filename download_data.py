@@ -1,5 +1,4 @@
 
-import io
 import pathlib
 import requests
 from tqdm import tqdm
@@ -43,12 +42,12 @@ def roc_download_instructions(directory=SENTENCES_DIR, subdirectory='roc'):
     print('Here are the Google Drive links to each file:')
     print(' - https://drive.google.com/file/d/1LoLfsRHwwEFbnyW8qJ9aZS5IYiRRZWDS/view?usp=sharing')
     print(' - https://drive.google.com/file/d/1iIMKXGwHlMtXwE-35LVkaiNo4rQ3RriK/view?usp=sharing')
-    print('Please place each file in \'./data/roc\', and preserve the original file name.')
+    print('Please place each file in \'./data/roc_stories\', and preserve the original file name.')
 
 
-def download_roc_stories(directory=SENTENCES_DIR, subdirectory='roc'):
-    outfilename1='roc_stories_train.csv'
-    outfilename2='roc_stories_test.csv'
+def download_roc_stories(directory=SENTENCES_DIR, subdirectory='roc_stories'):
+    outfilename1 = 'roc_stories_train.csv'
+    outfilename2 = 'roc_stories_test.csv'
     pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
     
     response = requests.get('https://drive.usercontent.google.com/uc?id=1LoLfsRHwwEFbnyW8qJ9aZS5IYiRRZWDS&export=download', stream=True)
