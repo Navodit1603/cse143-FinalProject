@@ -21,6 +21,11 @@ def main():
     extract_miller_center()
     print('Finished extracting Miller Center.')
     print()
+
+    print('Started extracting RateMyProfessor...')
+    extract_rate_my_professor()
+    print('Finished extracting RateMyProfessor.')
+    print()
     
     print('Started extracting ROCStories...')
     extract_roc_stories()
@@ -51,7 +56,7 @@ def extract_aesop_fables(original_directory=ORIGINAL_SENTENCES_DIR, extracted_di
 def extract_miller_center(original_directory=ORIGINAL_SENTENCES_DIR, extracted_directory=EXTRACTED_SENTENCES_DIR, subdirectory='miller_center'):
     pathlib.Path(f'{extracted_directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
     infilename1 = 'speeches.txt'
-    outfilename1 = 'speeches.txt'
+    outfilename1 = 'miller_center.txt'
 
     with open(f'{original_directory}/{subdirectory}/{infilename1}', 'r') as in_file:
         with open(f'{extracted_directory}/{subdirectory}/{outfilename1}', 'w') as out_file:
@@ -94,29 +99,16 @@ def extract_miller_center(original_directory=ORIGINAL_SENTENCES_DIR, extracted_d
                     new_line = new_line[1:]
                 
                 out_file.write(new_line)
+
+
+def extract_rate_my_professor(original_directory=ORIGINAL_SENTENCES_DIR, extracted_directory=EXTRACTED_SENTENCES_DIR, subdirectory='rate_my_professor'):
+    pathlib.Path(f'{extracted_directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
+    infilename1 = 'rmf.csv'
+    outfilename1 = 'rate_my_professor.csv'
     
-# transcript_str = ''.join(transcript) \
-#     .replace('{<p class="p1">', '') \
-#     .replace('<span class="s1">', '') \
-#     .replace('</span>', '') \
-#     .replace('<br>', ' ') \
-#     .replace('&nbsp;', ' ') \
-#     .replace('/p&gt;', '') \
-#     .replace('&gt;', '') \
-#     .replace('&#39;', '\'') \
-#     .replace('&amp;', '&') \
-#     .replace('&quot;', '') \
-#     .replace('&mdash;', '') \
-#     .replace('&deg;', '') \
-#     .replace('&rdquo;', '') \
-#     .replace('&rsquo;', '') \
-#     .replace('&ldquo', '') \
-#     .replace('&ndash;', '') \
-#     .replace('&frac12;', '') \
-#     .replace('&c.;', '') \
-#     .replace('&c.', '.') \
-#     .replace('<em>', '') \
-#     .replace('</em>}', '')
+    with open(f'{original_directory}/{subdirectory}/{infilename1}', 'rb') as in_file:
+        with open(f'{extracted_directory}/{subdirectory}/{outfilename1}', 'wb') as out_file:
+            out_file.writelines(in_file.readlines())
 
 
 def extract_roc_stories(original_directory=ORIGINAL_SENTENCES_DIR, extracted_directory=EXTRACTED_SENTENCES_DIR, subdirectory='roc_stories'):
