@@ -1,7 +1,20 @@
 import csv
 import numpy as np
 
-def readFile():
+def fileToList(filename):
+    fileList = []
+    with open(filename, 'r', encoding='cp1252') as file:
+        csv_reader = csv.reader(file)
+        next(csv_reader)
+
+        for row in csv_reader:
+            fileList.append(row)
+        np_filelist = np.array(fileList)
+    return np_filelist
+
+print(fileToList("train.csv"))
+
+def trainReadFile():
     pos = {}      #{word: {occurance: 6, pos: 3}}
     transitions = {"SEN_START": {"POS_OCCUR": 0}}  #{pos: {occurance: 6, pos: 3}}
 
@@ -43,3 +56,4 @@ def readFile():
             prev = row[2]
     
     return pos, transitions
+
