@@ -116,37 +116,21 @@ def download_miller_center(directory=SENTENCES_DIR, subdirectory='miller_center'
         print(f'{len(items)} speeches')
     
     with open(f'{directory}/{subdirectory}/{outfilename}', "w") as out_file:
+        is_first_line = True
         for item in items:
+            if is_first_line:
+                is_first_line = False
+            else:
+                out_file.write('\n')
+
             transcript: list[str] = list(item['transcript'])
             for i in range(0, len(transcript)):
                 if ord(transcript[i]) < 32 or ord(transcript[i]) == 127:
                     transcript[i] = ' '
 
-            transcript_str = ''.join(transcript) \
-                .replace('<p class="p1">', '') \
-                .replace('<span class="s1">', '') \
-                .replace('</span>', '') \
-                .replace('<br>', ' ') \
-                .replace('&nbsp;', ' ') \
-                .replace('/p&gt;', '') \
-                .replace('&gt;', '') \
-                .replace('&#39;', '\'') \
-                .replace('&amp;', '&') \
-                .replace('&quot;', '') \
-                .replace('&mdash;', '') \
-                .replace('&deg;', '') \
-                .replace('&rdquo;', '') \
-                .replace('&rsquo;', '') \
-                .replace('&ldquo', '') \
-                .replace('&ndash;', '') \
-                .replace('&frac12;', '') \
-                .replace('&c.;', '') \
-                .replace('&c.', '.') \
-                .replace('<em>', '') \
-                .replace('</em>', '')
+            transcript_str = ''.join(transcript)
             
             out_file.write(transcript_str)
-            out_file.write('\n')
 
 
 if __name__ == '__main__':
