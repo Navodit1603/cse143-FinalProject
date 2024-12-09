@@ -16,14 +16,14 @@ def main():
     print('Finished Aesop Fables.')
     print()
 
-    print('Started RateMyProfessor...')
-    download_rate_my_prof()
-    print('Finished RateMyProfessor.')
-    print()
-
     print('Started Miller Center...')
     download_miller_center()
     print('Finished Miller Center.')
+    print()
+
+    print('Started RateMyProfessor...')
+    download_rate_my_prof()
+    print('Finished RateMyProfessor.')
     print()
 
     # roc_download_instructions()
