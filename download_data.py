@@ -27,12 +27,13 @@ def main():
     print('Finished miller center.')
     print()
 
+    # roc_download_instructions()
     print('Started roc stories...')
     download_roc_stories()
     print('Finished roc stories.')
     print()
 
-    # roc_download_instructions()
+    print('Finished downloading all data.')
 
 
 def roc_download_instructions(directory=SENTENCES_DIR, subdirectory='roc'):
