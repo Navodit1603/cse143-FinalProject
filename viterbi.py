@@ -3,8 +3,9 @@ from readfile import *
 train_arr = fileToList1('train.csv')
 dev_arr = fileToList1('dev.csv')
 test_arr = fileToList1('test.csv')
+pos_tag_arr = fileToList2('pos_tags.csv')
 
-def train(fileList):
+def train(fileList, fileList2):
     pos = {}  # {word: {WORD_OCCUR: n, POS1: m1, POS2: m2, ...}}
     transitions = {"SEN_START": {"POS_OCCUR": 0}}  # {prev_pos: {POS_OCCUR: n, next_pos1: m1, next_pos2: m2, ...}}
 
@@ -35,6 +36,19 @@ def train(fileList):
         # Update prev_pos only if row[0] is empty
         prev_pos = current_pos if row[0] == "" else "SEN_START"
 
+    
+    for sen in fileList2:
+        prev = "SEN_START"
+        for partOfSpeech in sen:
+            if prev not in transitions:
+                transitions[prev] = {"POS_OCCUR": 1, partOfSpeech: 1}
+            else:
+                transitions[prev]["POS_OCCUR"] += 1
+                transitions[prev][partOfSpeech] = transitions[prev].get(partOfSpeech, 0) + 1
+            prev = partOfSpeech
+            
+    
+    
     return pos, transitions
 
 
@@ -136,7 +150,7 @@ fileList = [
 ]
 
 # Train the POS tagger
-pos, transitions = train(train_arr)
+pos, transitions = train(train_arr, pos_tag_arr)
 
 # Test sentence
 '''

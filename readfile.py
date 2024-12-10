@@ -17,4 +17,22 @@ def fileToList1(filename):
         np_filelist = np.array(fileList)
     return np_filelist
 
-#print(train(fileToList('train.csv')))
+def fileToList2(filename):
+    fileList = []
+    appending = []
+    with open(filename, 'r', encoding='cp1252') as file:
+        csv_reader = csv.reader(file)
+        next(csv_reader)
+        sentenceNum = 0
+        for row in csv_reader:
+            if sentenceNum != row[0]:
+                fileList.append(appending)
+                appending = []
+                appending.append(row[2])
+                sentenceNum = row[0]
+            else:
+                appending.append(row[2])
+    return fileList
+
+
+fileToList2("pos_tags.csv")
