@@ -12,6 +12,9 @@ SENTENCES_DIR = './data/sentences'
 def main():
     pathlib.Path(SENTENCES_DIR).mkdir(parents=True, exist_ok=True)
 
+    print('This may take a while...')
+    print()
+
     print('Started Aesop Fables...')
     download_aesop_fables()
     print('Finished Aesop Fables.')

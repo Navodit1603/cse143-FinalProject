@@ -18,14 +18,10 @@ def main():
     # print('Finished extracting Aesop Fables.')
     # print()
 
-    print('Started extracting Miller Center...')
-    extract_miller_center()
-    print('Finished extracting Miller Center.')
-    print()
-
-    # with open(f'{EXTRACTED_SENTENCES_DIR}/miller_center/miller_center.txt', 'r') as in_file:
-    #     bruh = in_file.readlines()
-    #     print(bruh[0])
+    # print('Started extracting Miller Center...')
+    # extract_miller_center()
+    # print('Finished extracting Miller Center.')
+    # print()
 
     # print('Started extracting RateMyProfessor...')
     # extract_rate_my_professor()
@@ -36,6 +32,16 @@ def main():
     # extract_roc_stories()
     # print('Finished extracting ROCStories.')
     # print()
+
+    # print('Started extracting ROCStories...')
+    # extract_roc_stories()
+    # print('Finished extracting ROCStories.')
+    # print()
+
+    print('Started extracting Wikipedia Stories...')
+    extract_wikipedia_sentences()
+    print('Finished extracting Wikipedia Stories.')
+    print()
 
 
 def extract_aesop_fables(original_directory=ORIGINAL_SENTENCES_DIR, extracted_directory=EXTRACTED_SENTENCES_DIR, subdirectory='aesop_fables'):
@@ -158,6 +164,15 @@ def extract_roc_stories(original_directory=ORIGINAL_SENTENCES_DIR, extracted_dir
 
                 just_the_text = line['sentence1'] + ' ' + line['sentence2'] + ' ' + line['sentence3'] + ' ' + line['sentence4'] + ' ' + line['sentence5']
                 out_file.write(just_the_text)
+
+def extract_wikipedia_sentences(original_directory=ORIGINAL_SENTENCES_DIR, extracted_directory=EXTRACTED_SENTENCES_DIR, subdirectory='wikipedia'):
+    pathlib.Path(f'{extracted_directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
+    infilename1 = 'wikisent2.txt'
+    outfilename1 = 'wikipedia_sentences.txt'
+    
+    with open(f'{original_directory}/{subdirectory}/{infilename1}', 'rb') as in_file:
+        with open(f'{extracted_directory}/{subdirectory}/{outfilename1}', 'wb') as out_file:
+            out_file.writelines(in_file.readlines())
 
 
 if __name__ == '__main__':
