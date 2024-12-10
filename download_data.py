@@ -33,6 +33,11 @@ def main():
     print('Finished ROCStories.')
     print()
 
+    print('Started Wikipedia Sentences...')
+    download_wikipedia_sentences()
+    print('Finished Wikipedia Sentences.')
+    print()
+
     print('Finished downloading all data.')
 
 
@@ -66,21 +71,6 @@ def download_miller_center(directory=SENTENCES_DIR, subdirectory='miller_center'
     
     with open(f'{directory}/{subdirectory}/{outfilename}', 'w') as out_file:
         out_file.write(json.dumps(items))
-        # is_first_line = True
-        # for item in items:
-        #     if is_first_line:
-        #         is_first_line = False
-        #     else:
-        #         out_file.write('\n')
-
-        #     transcript: list[str] = list(item['transcript'])
-        #     for i in range(0, len(transcript)):
-        #         if ord(transcript[i]) < 32 or ord(transcript[i]) == 127:
-        #             transcript[i] = ' '
-
-        #     transcript_str = ''.join(transcript)
-            
-        #     out_file.write(transcript_str)
 
 
 def download_rate_my_prof(directory=SENTENCES_DIR, subdirectory='rate_my_professor'):
@@ -117,6 +107,17 @@ def download_roc_stories(directory=SENTENCES_DIR, subdirectory='roc_stories'):
     with open(f'{directory}/{subdirectory}/{outfilename2}', 'wb') as out_file:
         for data in tqdm(response.iter_content()):
             out_file.write(data)
+
+
+def download_wikipedia_sentences(directory=SENTENCES_DIR, subdirectory='wikipedia'):
+    outfilename = 'wikisent2.txt'
+    pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
+
+    kaggle_path = kagglehub.dataset_download('mikeortman/wikipedia-sentences')
+    
+    with open(f'{kaggle_path}/{outfilename}', 'rb') as in_file:
+        with open(f'{directory}/{subdirectory}/{outfilename}', 'wb') as out_file:
+            out_file.writelines(in_file.readlines())
 
 
 def download_children_stories(directory=SENTENCES_DIR, subdirectory='children_stories'):
