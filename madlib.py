@@ -32,12 +32,6 @@ names = data['professor_name']
 schools = data['school_name']
 scores = data['star_rating']
 
-def split_into_sentences(paragraph):
-    # Regular expression pattern
-    sentence_endings = r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|\!)\s'
-    sentences = re.split(sentence_endings, paragraph)    
-    return sentences
-
 def sentiment_analysis(revs, scores, candidates):
     positivity = {}
     i = 0
@@ -101,7 +95,7 @@ def replace_words(text, tagged_line, replaceable, sentiment):
         to_replace = []
         # compile a list of all replaceable words in each sentence
         # pick approx 40% of words with the highest importance to replace
-        for line in split_into_sentences(text):
+        for line in tk.sent_tokenize(text):
             line_replace = {}
             for i in range(len(replaceable)):
                 if replaceable[i][0] in str(line).lower():
