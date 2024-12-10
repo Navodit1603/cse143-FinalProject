@@ -38,6 +38,32 @@ def split_into_sentences(paragraph):
     sentences = re.split(sentence_endings, paragraph)    
     return sentences
 
+def sentiment_analysis(revs, scores, candidates):
+    positivity = {}
+    i = 0
+    while i < len(revs):
+        review = str(revs[i])
+        if review == "No Comments":
+            i += 1
+            continue
+        score = round(float(scores[i]), 1)
+        tokens = tk.word_tokenize(review)
+        for tok in tokens:
+            if tok in candidates:
+                # record sentiment
+                positivity[tok] = positivity.get(tok, 0) + score
+        i += 1
+    # normalize
+    lower_bound = min(positivity.values())
+    upper_bound = max(positivity.values())
+    bound = upper_bound - lower_bound
+    for key in positivity.keys():
+        if positivity[key] > 0 and bound > 0:
+            positivity[key] -= lower_bound
+            positivity[key] /= bound / 2
+            positivity[key] -= 1
+    return positivity
+
 def tf(t, d):
     # computes term frequency of term t in document d containing tuples of (term, pos)
     t = t.lower()
@@ -60,7 +86,7 @@ def tf_idf(t, d):
     # computes tf-idf for term t in document d
     return tf(t, d) * idf(t)
 
-def replace_words(text, tagged_line, replaceable):
+def replace_words(text, tagged_line, replaceable, sentiment):
     # text: the original input string
     # tagged_line: a list of tuples containing (word, pos) for each token in the input
     # replaceable: a list of tuples (word, pos) for each pos in the set of replaceable pos
@@ -68,9 +94,10 @@ def replace_words(text, tagged_line, replaceable):
     if len(replaceable) > 0:
         # create dictionary mapping each word to its tf-idf
         importance = {}
+        # importance determined by tf_idf and sentiment (highly positive or highly negative)
         for (word, pos) in replaceable:
-            importance[word] = tf_idf(word, tagged_line)
-    
+            importance[word] = tf_idf(word, tagged_line) * np.abs(sentiment[word])
+
         to_replace = []
         # compile a list of all replaceable words in each sentence
         # pick approx 40% of words with the highest importance to replace
@@ -120,7 +147,9 @@ def __main__():
         if tagged_line[i][1] in madlib_pos:
             replaceable.append(tagged_line[i])
 
-    tags = replace_words(text, tagged_line, replaceable)
+    madlib_candidates = [replaceable[i][0] for i in range(len(replaceable))]
+    sentiment = sentiment_analysis(reviews, scores, madlib_candidates)
+    tags = replace_words(text, tagged_line, replaceable, sentiment)
 
     # rebuild text with new tags
     prev_token = None
