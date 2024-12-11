@@ -169,6 +169,15 @@ def runSet(set_num = 1):
 
 
 
+# runSingleSentence(sentence)
+# runSet(set_num)
+    # set_num = 0 -> train
+    # set_num = 1 -> dev
+    # set_num: everything else -> test
+# callTrain()
+    # to change training data json
+    # call if training function or training data is changed.
+
 
 runSingleSentence("Professor Veenstra is a good professor and fair in grading, assignments are time consuming.")
 
