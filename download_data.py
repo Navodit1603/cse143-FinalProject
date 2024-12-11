@@ -1,4 +1,5 @@
 
+import json
 import pathlib
 import requests
 from tqdm import tqdm
@@ -10,6 +11,9 @@ SENTENCES_DIR = './data/sentences'
 
 def main():
     pathlib.Path(SENTENCES_DIR).mkdir(parents=True, exist_ok=True)
+
+    print('This may take a while...')
+    print()
 
     print('Started Aesop Fables...')
     download_aesop_fables()
@@ -32,7 +36,54 @@ def main():
     print('Finished ROCStories.')
     print()
 
+    print('Started Wikipedia Sentences...')
+    download_wikipedia_sentences()
+    print('Finished Wikipedia Sentences.')
+    print()
+
     print('Finished downloading all data.')
+
+
+def download_aesop_fables(directory=SENTENCES_DIR, subdirectory='aesop_fables'):
+    outfilename = 'Aesop Fables.json'
+    pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
+
+    kaggle_path = kagglehub.dataset_download('muhammadardiputra/aesop-fables-dataset')
+    
+    with open(f'{kaggle_path}/{outfilename}', 'rb') as in_file:
+        with open(f'{directory}/{subdirectory}/{outfilename}', 'wb') as out_file:
+            out_file.writelines(in_file.readlines())
+
+
+def download_miller_center(directory=SENTENCES_DIR, subdirectory='miller_center'):
+    outfilename='speeches.json'
+    pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
+
+    the_url = 'https://api.millercenter.org/speeches'
+
+    request = requests.post(url=the_url)
+    data = request.json()
+    items = data['Items']
+
+    while 'LastEvaluatedKey' in data:
+        parameters = {"LastEvaluatedKey": data['LastEvaluatedKey']['doc_name']}
+        request = requests.post(url=the_url, params=parameters)
+        data = request.json()
+        items += data['Items']
+        print(f'{len(items)} speeches')
+    
+    with open(f'{directory}/{subdirectory}/{outfilename}', 'w') as out_file:
+        out_file.write(json.dumps(items))
+
+
+def download_rate_my_prof(directory=SENTENCES_DIR, subdirectory='rate_my_professor'):
+    outfilename='rmf.csv'
+    pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
+    
+    response = requests.get('https://data.mendeley.com/public-files/datasets/fvtfjyvw7d/files/256a4429-4fc3-4872-9a7c-26b44a820a8c/file_downloaded', stream=True)
+    with open(f'{directory}/{subdirectory}/{outfilename}', 'wb') as out_file:
+        for data in tqdm(response.iter_content()):
+            out_file.write(data)
 
 
 def roc_download_instructions(directory=SENTENCES_DIR, subdirectory='roc'):
@@ -61,11 +112,11 @@ def download_roc_stories(directory=SENTENCES_DIR, subdirectory='roc_stories'):
             out_file.write(data)
 
 
-def download_aesop_fables(directory=SENTENCES_DIR, subdirectory='aesop_fables'):
-    outfilename = 'Aesop Fables.json'
+def download_wikipedia_sentences(directory=SENTENCES_DIR, subdirectory='wikipedia'):
+    outfilename = 'wikisent2.txt'
     pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
 
-    kaggle_path = kagglehub.dataset_download('muhammadardiputra/aesop-fables-dataset')
+    kaggle_path = kagglehub.dataset_download('mikeortman/wikipedia-sentences')
     
     with open(f'{kaggle_path}/{outfilename}', 'rb') as in_file:
         with open(f'{directory}/{subdirectory}/{outfilename}', 'wb') as out_file:
@@ -86,51 +137,6 @@ def download_children_stories(directory=SENTENCES_DIR, subdirectory='children_st
     with open(f'{kaggle_path}/{outfilename2}', 'rb') as in_file:
         with open(f'{directory}/{subdirectory}/{outfilename2}', 'wb') as out_file:
             out_file.writelines(in_file.readlines())
-
-
-def download_rate_my_prof(directory=SENTENCES_DIR, subdirectory='rate_my_professor'):
-    outfilename='rmf.csv'
-    pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
-    
-    response = requests.get('https://data.mendeley.com/public-files/datasets/fvtfjyvw7d/files/256a4429-4fc3-4872-9a7c-26b44a820a8c/file_downloaded', stream=True)
-    with open(f'{directory}/{subdirectory}/{outfilename}', 'wb') as out_file:
-        for data in tqdm(response.iter_content()):
-            out_file.write(data)
-
-
-def download_miller_center(directory=SENTENCES_DIR, subdirectory='miller_center'):
-    outfilename='speeches.txt'
-    pathlib.Path(f'{directory}/{subdirectory}').mkdir(parents=True, exist_ok=True)
-
-    the_url = 'https://api.millercenter.org/speeches'
-
-    request = requests.post(url=the_url)
-    data = request.json()
-    items = data['Items']
-
-    while 'LastEvaluatedKey' in data:
-        parameters = {"LastEvaluatedKey": data['LastEvaluatedKey']['doc_name']}
-        request = requests.post(url=the_url, params=parameters)
-        data = request.json()
-        items += data['Items']
-        print(f'{len(items)} speeches')
-    
-    with open(f'{directory}/{subdirectory}/{outfilename}', "w") as out_file:
-        is_first_line = True
-        for item in items:
-            if is_first_line:
-                is_first_line = False
-            else:
-                out_file.write('\n')
-
-            transcript: list[str] = list(item['transcript'])
-            for i in range(0, len(transcript)):
-                if ord(transcript[i]) < 32 or ord(transcript[i]) == 127:
-                    transcript[i] = ' '
-
-            transcript_str = ''.join(transcript)
-            
-            out_file.write(transcript_str)
 
 
 if __name__ == '__main__':
