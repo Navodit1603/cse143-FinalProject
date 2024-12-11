@@ -6,10 +6,18 @@ import numpy as np
 import random as rand
 from heapq import nlargest
 from category_classifier import CategoryClassifier
+from viterbi import runSingleSentence
 
 # define tagger
 def pos_tag(tokens):
-    return tk.pos_tag(tokens)
+    # return tk.pos_tag(tokens)
+
+    pos_list = runSingleSentence(tokens)
+    ret = []
+    for i in range(len(tokens)):
+        ret.append((tokens[i], pos_list[i]))
+
+    return ret
 
 # list of parts of speech (from Penn Treebase tagset) useable for madlib replacement
 madlib_pos = ['CD', 'JJ', 'NN', 'NNS', 'VB', 'VBG', 'VBD']
