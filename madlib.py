@@ -5,6 +5,7 @@ import re
 import numpy as np
 import random as rand
 from heapq import nlargest
+from category_classifier import CategoryClassifier
 
 # define tagger
 def pos_tag(tokens):
@@ -72,7 +73,7 @@ def tf_idf(t, d, doc_set):
     # computes tf-idf for term t in document d
     return tf(t, d) * idf(t, doc_set)
 
-def replace_words(text, tagged_line, replaceable, sentiment, doc_set):
+def replace_words(text, tagged_line, replaceable, sentiment, doc_set, cat_classifier: CategoryClassifier):
     # text: the original input string
     # tagged_line: a list of tuples containing (word, pos) for each token in the input
     # replaceable: a list of tuples (word, pos) for each pos in the set of replaceable pos
@@ -108,7 +109,13 @@ def replace_words(text, tagged_line, replaceable, sentiment, doc_set):
 
         # take user input
         for (og_word, pos) in to_replace:
-            word = input(pos_names[pos] + ": ")
+            classification = cat_classifier.classify(og_word)
+            if classification == None:
+                user_input_ask = pos_names[pos]
+            else:
+                user_input_ask = classification
+
+            word = input(user_input_ask + ": ")
             for i in range(len(tagged_line)):
                 if tagged_line[i] == (og_word, pos):
                     tagged_line[i] = (word.upper(), pos)
@@ -132,6 +139,8 @@ def rebuild_text(tags):
     return output
 
 def __main__():
+    cat_classifier = CategoryClassifier(quiet=True)
+
     # Ask the user for the type of MadLib
     data_type = input("What type of MadLib? (rmp, aesop, roc): ").strip().lower()
 
@@ -162,7 +171,7 @@ def __main__():
         madlib_candidates = [word for word, _ in replaceable]
 
         sentiment = sentiment_analysis(reviews, scores, madlib_candidates)
-        tags = replace_words(text, tagged_line, replaceable, sentiment, reviews)
+        tags = replace_words(text, tagged_line, replaceable, sentiment, reviews, cat_classifier)
 
         # rebuild text with new tags
         output = rebuild_text(tags)
@@ -194,7 +203,7 @@ def __main__():
                 replaceable.append(tagged_line[i])
 
         madlib_candidates = [replaceable[i][0] for i in range(len(replaceable))]
-        tags = replace_words(text, tagged_line, replaceable, None, stories)
+        tags = replace_words(text, tagged_line, replaceable, None, stories, cat_classifier)
         # rebuild text with new tags
         output = ""
         prev_token = None

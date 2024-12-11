@@ -82,7 +82,10 @@ class CategoryClassifier:
         for category in CATEGORIES.keys():
             cos_sims = []
             for word in CATEGORIES[category]:
-                vec1 = self._word_embedding.wv.get_vector(word_in_question)
+                try:
+                    vec1 = self._word_embedding.wv.get_vector(word_in_question)
+                except KeyError:
+                    return None
                 vec1 = np.multiply(self._category_adjuster_weights[category], vec1)
 
                 vec2 = self._word_embedding.wv.get_vector(word)
