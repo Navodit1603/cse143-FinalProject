@@ -11,7 +11,7 @@ CATEGORIES = {
     'animals':
         ['dog', 'cat', 'bird', 'fish', 'wolf', 'chicken', 'cow', 'deer', 'horse', 'pig', 'lion', 'tiger', 'wasp', 'bee', 'snake', 'bear', 'panda', 'sheep', 'goat'],
     'sports':
-        ['basketball', 'volleyball', 'soccer', 'football', 'tennis', 'badminton', 'boxing', 'rugby', 'running', 'swimming']
+        ['basketball', 'volleyball', 'soccer', 'football', 'tennis', 'badminton', 'boxing', 'rugby', 'running', 'swimming'],
 }
 
 
@@ -53,7 +53,7 @@ def main():
 
         category_adjuster_weights[category] = adjuster_weights
     
-    word_in_question = 'toes'
+    word_in_question = 'knee'
     print(f'Word: {word_in_question}')
     for category in CATEGORIES.keys():
         cos_sims = []
