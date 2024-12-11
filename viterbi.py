@@ -2,79 +2,62 @@ from readfile import *
 import re
 
 
-def train(fileList, fileList2):
+def train(fileList, fileList2, pos_weight=7.0, transition_weight=1.0):
     pos = {}  # {word: {WORD_OCCUR: n, POS1: m1, POS2: m2, ...}}
     transitions = {"SEN_START": {"POS_OCCUR": 0}}  # {prev_pos: {POS_OCCUR: n, next_pos1: m1, next_pos2: m2, ...}}
 
     prev_pos = "SEN_START"  # Start every sentence with SEN_START
-    print(type(fileList))
+
     for row in fileList:
-        if len(row) < 3:  # Skip malformed rows
+        if len(row) < 3:
             continue
 
-        # Extract word and POS
         word = row[1].lower()
         current_pos = row[2]
 
-        # Update pos dictionary
         if word not in pos:
-            pos[word] = {"WORD_OCCUR": 1, current_pos: 1}
+            pos[word] = {"WORD_OCCUR": pos_weight, current_pos: pos_weight}
         else:
-            pos[word]["WORD_OCCUR"] += 1
-            pos[word][current_pos] = pos[word].get(current_pos, 0) + 1
+            pos[word]["WORD_OCCUR"] += pos_weight
+            pos[word][current_pos] = pos[word].get(current_pos, 0) + pos_weight
 
-        # Update transitions dictionary
         if prev_pos not in transitions:
-            transitions[prev_pos] = {"POS_OCCUR": 1, current_pos: 1}
+            transitions[prev_pos] = {"POS_OCCUR": transition_weight, current_pos: transition_weight}
         else:
-            transitions[prev_pos]["POS_OCCUR"] += 1
-            transitions[prev_pos][current_pos] = transitions[prev_pos].get(current_pos, 0) + 1
+            transitions[prev_pos]["POS_OCCUR"] += transition_weight
+            transitions[prev_pos][current_pos] = transitions[prev_pos].get(current_pos, 0) + transition_weight
 
-        # Update prev_pos only if row[0] is empty
         prev_pos = current_pos if row[0] == "" else "SEN_START"
 
-    
     for sen in fileList2:
         prev = "SEN_START"
         for partOfSpeech in sen:
             if prev not in transitions:
-                transitions[prev] = {"POS_OCCUR": 1, partOfSpeech: 1}
+                transitions[prev] = {"POS_OCCUR": transition_weight, partOfSpeech: transition_weight}
             else:
-                transitions[prev]["POS_OCCUR"] += 1
-                transitions[prev][partOfSpeech] = transitions[prev].get(partOfSpeech, 0) + 1
+                transitions[prev]["POS_OCCUR"] += transition_weight
+                transitions[prev][partOfSpeech] = transitions[prev].get(partOfSpeech, 0) + transition_weight
             prev = partOfSpeech
-            
-    
-    
+
     return pos, transitions
 
-
-
-def test(pos, transitions, sentence):
-    # Ensure all words in the sentence are lowercase
+def test(pos, transitions, sentence, unseen_word_weight=1e-6, transition_weight=1.0):
     sentence = [word.lower() for word in sentence]
 
-    # Viterbi variables
-    viterbi = [{}]  # List of dictionaries to store probabilities
-    backpointer = [{}]  # List of dictionaries to store backpointers
+    viterbi = [{}]
+    backpointer = [{}]
 
-    # Set a smoothing value for unseen words
-    smoothing_value = 1e-6
-
-    # Initialization step
     for current_pos in transitions["SEN_START"]:
         if current_pos == "POS_OCCUR":
             continue
-        p_trans = transitions["SEN_START"].get(current_pos, 0) / transitions["SEN_START"]["POS_OCCUR"]
+        p_trans = (transitions["SEN_START"].get(current_pos, 0) / transitions["SEN_START"]["POS_OCCUR"]) * transition_weight
         if sentence[0] in pos:
             p_pos = pos[sentence[0]].get(current_pos, 0) / pos[sentence[0]]["WORD_OCCUR"]
         else:
-            # Assign a uniform probability for unseen words
-            p_pos = smoothing_value
+            p_pos = unseen_word_weight
         viterbi[0][current_pos] = p_trans * p_pos
         backpointer[0][current_pos] = None
 
-    # Recursion step
     for t in range(1, len(sentence)):
         viterbi.append({})
         backpointer.append({})
@@ -87,13 +70,12 @@ def test(pos, transitions, sentence):
             max_prob = 0
             best_prev_pos = None
             for prev_pos in viterbi[t - 1]:
-                p_trans = transitions[prev_pos].get(current_pos, 0) / transitions[prev_pos]["POS_OCCUR"]
+                p_trans = (transitions[prev_pos].get(current_pos, 0) / transitions[prev_pos]["POS_OCCUR"]) * transition_weight
 
                 if word in pos:
                     p_pos = pos[word].get(current_pos, 0) / pos[word]["WORD_OCCUR"]
                 else:
-                    # Assign a uniform probability for unseen words
-                    p_pos = smoothing_value
+                    p_pos = unseen_word_weight
 
                 prob = viterbi[t - 1][prev_pos] * p_trans * p_pos
                 if prob > max_prob:
@@ -103,14 +85,20 @@ def test(pos, transitions, sentence):
             viterbi[t][current_pos] = max_prob
             backpointer[t][current_pos] = best_prev_pos
 
-    # Termination step and backtracking
     best_path = []
-    last_pos = max(viterbi[-1], key=viterbi[-1].get)  # Get the best last POS
+    try:
+        last_pos = max(viterbi[-1], key=viterbi[-1].get)
+    except ValueError:
+        return ["UNKNOWN"] * len(sentence)
+
     best_path.append(last_pos)
 
     for t in range(len(sentence) - 1, 0, -1):
-        last_pos = backpointer[t][last_pos]
-        best_path.insert(0, last_pos)
+        if last_pos not in backpointer[t]:
+            best_path.insert(0, "UNKNOWN")
+        else:
+            last_pos = backpointer[t][last_pos]
+            best_path.insert(0, last_pos)
 
     return best_path
 
@@ -118,20 +106,29 @@ def test(pos, transitions, sentence):
 
 def predict(partsOfSpeech, transitions, word_arr):
     words = []
-    pos = []
-    count = 0
+    correct_pos = []
+    point = 0
     for word in word_arr:
         if len(word[0]) > 0:
+            print(word[0])
+            if len(words) != 0:
+                predicted_tags = test(partsOfSpeech, transitions, words)
+                for i in range(len(predicted_tags)):
+                    #print("predicted: ", predicted_tags)
+                    #print("correct: ", correct_pos)
+                    if str(predicted_tags[i]) == correct_pos[i]:
+                        point += 1
+
+            words = []
             words.append(word[1])
-            pos.append(word[2])
+            correct_pos = []
+            correct_pos.append(word[2])
         else:
-            path = test(partsOfSpeech, transitions, words)
-            for i in range(len(path)):
-                if pos[i] == str(path[i]):
-                    count += 1
-            words = [word[1]]
-            pos = [word[2]]
-    return count / len(word_arr)            
+            words.append(word[1])
+            correct_pos.append(word[2])
+    
+    return point / len(word_arr)
+
 
 
 def stringToList(s):
