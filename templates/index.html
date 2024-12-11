@@ -9,8 +9,23 @@
 <body>
     <h1>Welcome to the Madlib Creator!</h1>
     <img src="{{ url_for('static', filename='madlib.png') }}">
-    <p>Here, you can build a Madlib based upon a variety of categories and subjects, including RMP Reviews, speeches, and Aesop's Fables.</p>
+    <p>Here, you can build a Madlib based upon a variety of categories and subjects, including RMP reviews, speeches, and Aesop's Fables. Current version uses RMP reviews.</p>
+    <p>Input the various parts of speech for a random sentence, and watch the magic happen!</p>
     <p>Be creative, and have fun making Madlibs!</p>
+
+    <form method="POST" action="/">
+        {% for pos, name in pos_names.items() %}
+            <label for="{{ pos }}">{{ name }}:</label><br>
+            <input type="text" id="{{ pos }}" name="{{ pos }}"><br>
+        {% endfor %}
+        <button type="submit">Generate Madlib</button>
+    </form>
+
+    {% if output %}
+        <h2>Madlib Output:</h2>
+        <p>{{ output }}</p>
+    {% endif %}
+    <br><br><br><br><br><br>
     <p>Made by Nikolas Makranyi, Navodit Maheshwari, Bill Mularski, Nathan Wu for CSE143.</p>
 </body>
 </html>
