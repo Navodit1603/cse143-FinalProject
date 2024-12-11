@@ -6,9 +6,11 @@ from gensim.models import Word2Vec
 import nltk.tokenize
 from unidecode import unidecode
 
+# import logging
+# logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
-# WIKIPEDIA_SENTENCES_PATH = './data_extracted/sentences/wikipedia/wikipedia_sentences.txt'
-WIKIPEDIA_SENTENCES_PATH = './data_extracted/sentences/roc_stories/roc_stories.txt'
+
+WIKIPEDIA_SENTENCES_PATH = './data_extracted/sentences/wikipedia/wikipedia_sentences.txt'
 OUTPUT_PATH = './data_extracted/word2vec/wikipedia_embedding.model'
 
 
@@ -19,9 +21,28 @@ def main():
     print()
 
     print('Starting word2vec for Wikipedia Sentences...')
-    wikipedia_sentences_iterator = WikipediaSentencesIterator(max_lines=900000)
+    wikipedia_sentences_iterator = WikipediaSentencesIterator(max_lines=10000)
     with wikipedia_sentences_iterator as wsi:
-        word_embedding = Word2Vec(iter(wsi), vector_size=1024, window=15, min_count=5, epochs=15)
+        # print()
+        # print('----------------------------------------')
+
+        # bruh = iter(wsi)
+
+        # thing = next(bruh)
+        # while True:
+        #     try:
+        #         thing = next(bruh)
+        #     except StopIteration:
+        #         break
+        # print(thing)
+        # bruh = iter(wsi)
+        # print(next(bruh))
+
+        # print('----------------------------------------')
+        # print()
+        # exit()
+
+        word_embedding = Word2Vec(sentences=iter(wsi), vector_size=512, window=15, min_count=3, epochs=10)
         word_embedding.save(OUTPUT_PATH)
     print('Finished word2vec for Wikipedia Sentences.')
     print()
@@ -46,7 +67,13 @@ class WikipediaSentencesIterator:
             self._in_file.close()
     
     def __iter__(self):
-        return self
+        if not self._in_file:
+            raise Exception('Did not correctly open file for WikipediaSentenceIterator.')
+        else:
+            self._in_file.seek(0)
+            self._current_line = ''
+            self._current_line_num = 0
+            return self
 
     def __next__(self):
         if self._current_line_num >= self._max_lines:
