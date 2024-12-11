@@ -25,7 +25,7 @@ def main():
     vec_min = np.min(diff_vec)
     vec_max = np.max(diff_vec)
     # diff_vec = np.array([remap(vec_min, vec_max, 1.0, 100.0, val) for val in diff_vec])
-    body_parts_weights = np.array([1.0 / np.exp(remap(vec_min, vec_max, 0.0, 10.0, val)) for val in diff_vec])
+    body_parts_weights = np.array([1.0 / np.exp(remap(vec_min, vec_max, 0.0, 1.0, val)) for val in diff_vec])
     # print(body_parts_weights)
     # exit()
 
@@ -36,7 +36,7 @@ def main():
             for i in range(0, word_embedding.vector_size):
                 diff = abs(word_embedding.wv.get_vector(item1)[i] - word_embedding.wv.get_vector(item2)[i])
                 diff_vec[i] += diff
-    animals_inverted_diff_vec = np.array([1.0/val for val in diff_vec])
+    animals_weights = np.array([1.0 / np.exp(remap(vec_min, vec_max, 0.0, 1.0, val)) for val in diff_vec])
 
     sports = ['basketball', 'volleyball', 'soccer', 'football', 'tennis', 'badminton', 'boxing', 'rugby', 'running', 'swimming']
     diff_vec = np.zeros(shape=(word_embedding.vector_size), dtype=float)
@@ -45,29 +45,34 @@ def main():
             for i in range(0, word_embedding.vector_size):
                 diff = abs(word_embedding.wv.get_vector(item1)[i] - word_embedding.wv.get_vector(item2)[i])
                 diff_vec[i] += diff
-    sports_inverted_diff_vec = np.array([1.0/val for val in diff_vec])
+    sports_parts_weights = np.array([1.0 / np.exp(remap(vec_min, vec_max, 0.0, 1.0, val)) for val in diff_vec])
 
-    word_in_question = 'finger'
+    word_in_question = 'baseball'
 
     body_parts_sims = []
     for word in body_parts:
-        vec1 = word_embedding.wv.get_vector(word_in_question)
-        vec1 = np.multiply(body_parts_weights, vec1)
+        # vec1 = word_embedding.wv.get_vector(word_in_question)
+        # vec1 = np.multiply(body_parts_weights, vec1)
 
-        vec2 = word_embedding.wv.get_vector(word)
-        vec2 = np.multiply(body_parts_weights, vec2)
+        # vec2 = word_embedding.wv.get_vector(word)
+        # vec2 = np.multiply(body_parts_weights, vec2)
 
-        # cos_sim = word_embedding.wv.similarity(word_in_question, word)
-        cos_sim = np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
+        # cos_sim = np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
+        cos_sim = word_embedding.wv.similarity(word_in_question, word)
         body_parts_sims.append(cos_sim)
         print(f'{word:<10} ---> {cos_sim: }')
-        # print(f'{word} ---> {word_embedding.wv.similarity(word_in_question, word)}')
     print(heuristic_similarity(body_parts_sims))
     print()
-    # exit()
 
     animals_sims = []
     for word in animals:
+        # vec1 = word_embedding.wv.get_vector(word_in_question)
+        # vec1 = np.multiply(animals_weights, vec1)
+
+        # vec2 = word_embedding.wv.get_vector(word)
+        # vec2 = np.multiply(animals_weights, vec2)
+
+        # cos_sim = np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
         cos_sim = word_embedding.wv.similarity(word_in_question, word)
         animals_sims.append(cos_sim)
         print(f'{word:<10} ---> {cos_sim: }')
@@ -76,6 +81,13 @@ def main():
 
     sports_sims = []
     for word in sports:
+        # vec1 = word_embedding.wv.get_vector(word_in_question)
+        # vec1 = np.multiply(sports_parts_weights, vec1)
+
+        # vec2 = word_embedding.wv.get_vector(word)
+        # vec2 = np.multiply(sports_parts_weights, vec2)
+
+        # cos_sim = np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
         cos_sim = word_embedding.wv.similarity(word_in_question, word)
         sports_sims.append(cos_sim)
         print(f'{word:<10} ---> {cos_sim: }')

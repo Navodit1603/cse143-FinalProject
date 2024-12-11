@@ -5,9 +5,7 @@ from typing import Optional
 from gensim.models import Word2Vec
 import nltk.tokenize
 from unidecode import unidecode
-
-# import logging
-# logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+import datetime
 
 
 WIKIPEDIA_SENTENCES_PATH = './data_extracted/sentences/wikipedia/wikipedia_sentences.txt'
@@ -21,30 +19,13 @@ def main():
     print()
 
     print('Starting word2vec for Wikipedia Sentences...')
-    wikipedia_sentences_iterator = WikipediaSentencesIterator(max_lines=10000)
+    print(datetime.datetime.now())
+    wikipedia_sentences_iterator = WikipediaSentencesIterator(max_lines=7000000)
     with wikipedia_sentences_iterator as wsi:
-        # print()
-        # print('----------------------------------------')
-
-        # bruh = iter(wsi)
-
-        # thing = next(bruh)
-        # while True:
-        #     try:
-        #         thing = next(bruh)
-        #     except StopIteration:
-        #         break
-        # print(thing)
-        # bruh = iter(wsi)
-        # print(next(bruh))
-
-        # print('----------------------------------------')
-        # print()
-        # exit()
-
-        word_embedding = Word2Vec(sentences=iter(wsi), vector_size=512, window=15, min_count=3, epochs=10)
+        word_embedding = Word2Vec(sentences=iter(wsi), vector_size=128, window=15, min_count=3, epochs=5)
         word_embedding.save(OUTPUT_PATH)
     print('Finished word2vec for Wikipedia Sentences.')
+    print(datetime.datetime.now())
     print()
 
     # word_embedding = Word2Vec.load(OUTPUT_PATH)
