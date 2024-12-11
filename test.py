@@ -7,31 +7,15 @@ WORD_EMBEDDING_PATH = './data_extracted/word2vec/wikipedia_embedding.model'
 
 
 def main():
-    # thing = np.array([
-    #     0.014881068840622902,
-    #     0.05631968379020691,
-    #     0.058073848485946655,
-    #     -0.05272017791867256,
-    #     -0.02662033587694168,
-    #     0.09974449872970581,
-    #     0.14472874999046326,
-    #     -0.03562953323125839,
-    #     0.02643517404794693,
-    #     0.043323736637830734
-    # ])
-    # print(thing)
-    # print(filter_out_outliers(thing))
-    # exit()
-
     print('Loading precomputed word embedding...')
     word_embedding = Word2Vec.load(WORD_EMBEDDING_PATH)
     print('Finished loading precomputed word embedding.')
     print()
 
-    print(word_embedding.wv.most_similar('mother', topn=10))
-    exit()
+    # print(word_embedding.wv.most_similar(positive=['dog', 'cat', 'bird', 'fish', 'wolf', 'chicken', 'cow', 'deer', 'horse', 'pig', 'lion', 'tiger', 'wasp', 'bee', 'snake', 'bear', 'panda', 'sheep', 'goat']))
+    # exit()
     
-    body_parts = ['arm', 'arms', 'leg', 'legs', 'foot', 'feet', 'hand', 'hands', 'head', 'heads', 'body', 'bodies', 'torso', 'eye', 'eyes', 'ear', 'ears', 'mouth', 'mouths']
+    body_parts = ['arm', 'leg', 'foot', 'hand', 'head', 'body', 'eye', 'ear', 'mouth']
     diff_vec = np.zeros(shape=(word_embedding.vector_size), dtype=float)
     for item1 in body_parts:
         for item2 in body_parts:
@@ -45,7 +29,7 @@ def main():
     # print(body_parts_weights)
     # exit()
 
-    animals = ['dog', 'cat', 'bird', 'fish', 'wolf', 'chicken', 'cow', 'deer', 'horse', 'pig']
+    animals = ['dog', 'cat', 'bird', 'fish', 'wolf', 'chicken', 'cow', 'deer', 'horse', 'pig', 'lion', 'tiger', 'wasp', 'bee', 'snake', 'bear', 'panda', 'sheep', 'goat']
     diff_vec = np.zeros(shape=(word_embedding.vector_size), dtype=float)
     for item1 in animals:
         for item2 in animals:
@@ -63,7 +47,7 @@ def main():
                 diff_vec[i] += diff
     sports_inverted_diff_vec = np.array([1.0/val for val in diff_vec])
 
-    word_in_question = 'knee'
+    word_in_question = 'finger'
 
     body_parts_sims = []
     for word in body_parts:
@@ -76,23 +60,25 @@ def main():
         # cos_sim = word_embedding.wv.similarity(word_in_question, word)
         cos_sim = np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
         body_parts_sims.append(cos_sim)
-        print(f'{word} ---> {cos_sim}')
+        print(f'{word:<10} ---> {cos_sim: }')
         # print(f'{word} ---> {word_embedding.wv.similarity(word_in_question, word)}')
     print(heuristic_similarity(body_parts_sims))
     print()
-    exit()
+    # exit()
 
     animals_sims = []
     for word in animals:
-        animals_sims.append(word_embedding.wv.similarity(word_in_question, word))
-        print(f'{word} ---> {word_embedding.wv.similarity(word_in_question, word)}')
+        cos_sim = word_embedding.wv.similarity(word_in_question, word)
+        animals_sims.append(cos_sim)
+        print(f'{word:<10} ---> {cos_sim: }')
     print(heuristic_similarity(animals_sims))
     print()
 
     sports_sims = []
     for word in sports:
-        sports_sims.append(word_embedding.wv.similarity(word_in_question, word))
-        print(f'{word} ---> {word_embedding.wv.similarity(word_in_question, word)}')
+        cos_sim = word_embedding.wv.similarity(word_in_question, word)
+        sports_sims.append(cos_sim)
+        print(f'{word:<10} ---> {cos_sim: }')
     print(heuristic_similarity(sports_sims))
     print()
 

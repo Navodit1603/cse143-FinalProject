@@ -4,9 +4,11 @@ import pathlib
 from typing import Optional
 from gensim.models import Word2Vec
 import nltk.tokenize
+from unidecode import unidecode
 
 
-WIKIPEDIA_SENTENCES_PATH = './data_extracted/sentences/wikipedia/wikipedia_sentences.txt'
+# WIKIPEDIA_SENTENCES_PATH = './data_extracted/sentences/wikipedia/wikipedia_sentences.txt'
+WIKIPEDIA_SENTENCES_PATH = './data_extracted/sentences/roc_stories/roc_stories.txt'
 OUTPUT_PATH = './data_extracted/word2vec/wikipedia_embedding.model'
 
 
@@ -17,9 +19,9 @@ def main():
     print()
 
     print('Starting word2vec for Wikipedia Sentences...')
-    wikipedia_sentences_iterator = WikipediaSentencesIterator(max_lines=100000)
+    wikipedia_sentences_iterator = WikipediaSentencesIterator(max_lines=900000)
     with wikipedia_sentences_iterator as wsi:
-        word_embedding = Word2Vec(iter(wsi), vector_size=512, window=64, min_count=1, epochs=100, workers=10)
+        word_embedding = Word2Vec(iter(wsi), vector_size=1024, window=15, min_count=5, epochs=15)
         word_embedding.save(OUTPUT_PATH)
     print('Finished word2vec for Wikipedia Sentences.')
     print()
@@ -57,7 +59,10 @@ class WikipediaSentencesIterator:
                     raise Exception('Did not correctly open file for WikipediaSentenceIterator.')
                 else:
                     self._current_line = self._in_file.readline()
+                    self._current_line = unidecode(self._current_line).lower()
+
                     self._current_line_num += 1
+
                     return nltk.tokenize.word_tokenize(self._current_line)
 
 
