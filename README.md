@@ -26,7 +26,6 @@ pip install requests kagglehub tqdm nltk pandas numpy unidecode gensim
 The following nltk resources are required:
  - punkt_tab
  - averaged_perceptron_tagger_eng
- - wordnet
 
 These can be installed by running:
 ```
@@ -34,7 +33,6 @@ python3
 >>> import nltk
 >>> nltk.download('punkt_tab')
 >>> nltk.download('averaged_perceptron_tagger_eng')
->>> nltk.download('wordnet')
 >>> exit()
 ```
 
