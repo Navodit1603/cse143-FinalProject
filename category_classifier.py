@@ -73,7 +73,7 @@ class CategoryClassifier:
 
             self._category_adjuster_weights[category] = adjuster_weights
 
-    def classify(self, word_in_question: str, cutoff: float=0.4) -> Optional[str]:
+    def classify(self, word_in_question: str, cutoff: float=0.47) -> Optional[str]:
         word_in_question = unidecode(word_in_question).lower()
 
         max_found = 'NoneFound'
