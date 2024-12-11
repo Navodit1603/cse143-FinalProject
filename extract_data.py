@@ -4,6 +4,7 @@ import json
 import pathlib
 from tqdm import tqdm
 from unidecode import unidecode
+import random
 
 
 ORIGINAL_SENTENCES_DIR = './data/sentences'
@@ -13,30 +14,30 @@ EXTRACTED_SENTENCES_DIR = './data_extracted/sentences'
 def main():
     pathlib.Path(EXTRACTED_SENTENCES_DIR).mkdir(parents=True, exist_ok=True)
     
-    print('Started extracting Aesop Fables...')
-    extract_aesop_fables()
-    print('Finished extracting Aesop Fables.')
-    print()
+    # print('Started extracting Aesop Fables...')
+    # extract_aesop_fables()
+    # print('Finished extracting Aesop Fables.')
+    # print()
 
-    print('Started extracting Miller Center...')
-    extract_miller_center()
-    print('Finished extracting Miller Center.')
-    print()
+    # print('Started extracting Miller Center...')
+    # extract_miller_center()
+    # print('Finished extracting Miller Center.')
+    # print()
 
-    print('Started extracting RateMyProfessor...')
-    extract_rate_my_professor()
-    print('Finished extracting RateMyProfessor.')
-    print()
+    # print('Started extracting RateMyProfessor...')
+    # extract_rate_my_professor()
+    # print('Finished extracting RateMyProfessor.')
+    # print()
     
-    print('Started extracting ROCStories...')
-    extract_roc_stories()
-    print('Finished extracting ROCStories.')
-    print()
+    # print('Started extracting ROCStories...')
+    # extract_roc_stories()
+    # print('Finished extracting ROCStories.')
+    # print()
 
-    print('Started extracting ROCStories...')
-    extract_roc_stories()
-    print('Finished extracting ROCStories.')
-    print()
+    # print('Started extracting ROCStories...')
+    # extract_roc_stories()
+    # print('Finished extracting ROCStories.')
+    # print()
 
     print('Started extracting Wikipedia Stories...')
     extract_wikipedia_sentences()
@@ -172,7 +173,17 @@ def extract_wikipedia_sentences(original_directory=ORIGINAL_SENTENCES_DIR, extra
     
     with open(f'{original_directory}/{subdirectory}/{infilename1}', 'rb') as in_file:
         with open(f'{extracted_directory}/{subdirectory}/{outfilename1}', 'wb') as out_file:
-            out_file.writelines(in_file.readlines())
+            lines = []
+
+            line_read = in_file.readline()
+            while line_read:
+                lines.append(line_read)
+                line_read = in_file.readline()
+            
+            random.seed(12345)
+            random.shuffle(lines)
+
+            out_file.writelines(lines)
 
 
 if __name__ == '__main__':

@@ -27,6 +27,9 @@ def main():
     word_embedding = Word2Vec.load(WORD_EMBEDDING_PATH)
     print('Finished loading precomputed word embedding.')
     print()
+
+    print(word_embedding.wv.most_similar('mother', topn=10))
+    exit()
     
     body_parts = ['arm', 'arms', 'leg', 'legs', 'foot', 'feet', 'hand', 'hands', 'head', 'heads', 'body', 'bodies', 'torso', 'eye', 'eyes', 'ear', 'ears', 'mouth', 'mouths']
     diff_vec = np.zeros(shape=(word_embedding.vector_size), dtype=float)
@@ -42,7 +45,7 @@ def main():
     # print(body_parts_weights)
     # exit()
 
-    animals = ['dog', 'cat', 'bird', 'mouse', 'wolf', 'chicken', 'cow', 'deer', 'horse', 'pig']
+    animals = ['dog', 'cat', 'bird', 'fish', 'wolf', 'chicken', 'cow', 'deer', 'horse', 'pig']
     diff_vec = np.zeros(shape=(word_embedding.vector_size), dtype=float)
     for item1 in animals:
         for item2 in animals:
@@ -60,7 +63,7 @@ def main():
                 diff_vec[i] += diff
     sports_inverted_diff_vec = np.array([1.0/val for val in diff_vec])
 
-    word_in_question = 'shoulder'
+    word_in_question = 'knee'
 
     body_parts_sims = []
     for word in body_parts:
@@ -77,19 +80,19 @@ def main():
         # print(f'{word} ---> {word_embedding.wv.similarity(word_in_question, word)}')
     print(heuristic_similarity(body_parts_sims))
     print()
-    # exit()
+    exit()
 
     animals_sims = []
     for word in animals:
         animals_sims.append(word_embedding.wv.similarity(word_in_question, word))
-        # print(f'{word} ---> {word_embedding.wv.similarity(word_in_question, word)}')
+        print(f'{word} ---> {word_embedding.wv.similarity(word_in_question, word)}')
     print(heuristic_similarity(animals_sims))
     print()
 
     sports_sims = []
     for word in sports:
         sports_sims.append(word_embedding.wv.similarity(word_in_question, word))
-        # print(f'{word} ---> {word_embedding.wv.similarity(word_in_question, word)}')
+        print(f'{word} ---> {word_embedding.wv.similarity(word_in_question, word)}')
     print(heuristic_similarity(sports_sims))
     print()
 
