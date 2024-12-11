@@ -147,11 +147,11 @@ def callTrain():
 def runSingleSentence(sentence):
     pos = openJson('pos.json')
     transitions = openJson('transitions.json')
-    results = test(pos, transitions, stringToList(sentence))
-    pos_results = ""
+    results = test(pos, transitions, sentence)
+    pos_results = []
     for result in results:
-        pos_results = pos_results + result + ", "
-    print(pos_results)
+        pos_results.append(result)
+    return pos_results
 
 def runSet(set_num = 1):
     pos = openJson('pos.json')
