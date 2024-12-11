@@ -1,9 +1,6 @@
 from readfile import *
+import re
 
-train_arr = fileToList1('train.csv')
-dev_arr = fileToList1('dev.csv')
-test_arr = fileToList1('test.csv')
-pos_tag_arr = fileToList2('pos_tags.csv')
 
 def train(fileList, fileList2):
     pos = {}  # {word: {WORD_OCCUR: n, POS1: m1, POS2: m2, ...}}
@@ -137,42 +134,44 @@ def predict(partsOfSpeech, transitions, word_arr):
     return count / len(word_arr)            
 
 
+def stringToList(s):
+    return re.findall( r'\w+|[^\s\w]+', s)
 
 
+'''
+# Training the data
+# ----------------------------------------------------
+train_arr = fileToList1('train.csv')
+dev_arr = fileToList1('dev.csv')
+test_arr = fileToList1('test.csv')
+pos_tag_arr = fileToList2('pos_tags.csv')
 
-# Example training data
-fileList = [
-    ["Sentence 1", "The", "DET"],
-    ["", "Fans", "NOUN"],
-    ["", "Watch", "VERB"],
-    ["", "the", "DET"],
-    ["", "Race", "NOUN"]
-]
-
-# Train the POS tagger
 pos, transitions = train(train_arr, pos_tag_arr)
 
-# Test sentence
-'''
-Sentence: 27961,A,DT,O
-,democratic,JJ,O
-,republic,NN,O
-,replaced,VBD,O
-,the,DT,O
-,monarchy,NN,O
-,in,IN,O
-,1946,CD,B-tim
-,and,CC,O
-,economic,JJ,O
-,revival,NN,O
-,followed,VBD,O
-,.,.,O
-
+saveTrainToJson('pos.json', pos)
+saveTrainToJson('transitions.json', transitions)
+# -----------------------------------------------------
 '''
 
+pos = openJson('pos.json')
+transitions = openJson('transitions.json')
 
-sentence = "Eddie ate dinamite good-bye eddie"
-#result = test(pos, transitions, sentence.split(" "))
-#print(result)  # Output: ['DET', 'NOUN', 'VERB']
+
+sentence = "Veenstra is a good professor and fair in grading, assignments are time consuming."
+
+# Printing Results
+# ----------------------------------------------------------------
+results = test(pos, transitions, stringToList(sentence))
+thing = ""
+for result in results:
+    thing = thing + result + ", "
+print(thing)
+# ----------------------------------------------------------------
+
+'''
+# Get Accuracy Score
+# ----------------------------------------------------------------
 percent = predict(pos, transitions, test_arr)
 print(percent)
+# ----------------------------------------------------------------
+'''

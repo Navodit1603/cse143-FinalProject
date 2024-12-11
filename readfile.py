@@ -1,5 +1,7 @@
 import csv
 import numpy as np
+import json
+
 
 def fileToList1(filename):
     fileList = []
@@ -35,4 +37,13 @@ def fileToList2(filename):
     return fileList
 
 
-fileToList2("pos_tags.csv")
+def saveTrainToJson(filename, dictionary):
+    with open(filename, "w") as file:
+        json.dump(dictionary, file, indent=4)
+
+def openJson(filename):
+    with open(filename, 'r') as json_file:
+        data = json.load(json_file)
+    
+    return data
+
