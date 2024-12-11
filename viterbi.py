@@ -129,18 +129,30 @@ def predict(partsOfSpeech, transitions, word_arr):
     
     return point / len(word_arr)
 
-
-
 def stringToList(s):
     return re.findall( r'\w+|[^\s\w]+', s)
 
+def sampleDevSet(dev_arr, fraction=0.1, random_seed=42):
+    """
+    Function to sample a fraction of the dev array.
+    :param dev_arr: numpy array of the development set
+    :param fraction: fraction of the array to sample (default is 10%)
+    :param random_seed: seed for reproducibility (default is 42)
+    :return: sampled numpy array
+    """
+    np.random.seed(random_seed)  # Set seed for reproducibility
+    sample_size = int(len(dev_arr) * fraction)
+    sampled_indices = np.random.choice(len(dev_arr), sample_size, replace=False)
+    return dev_arr[sampled_indices]
 
 '''
 # Training the data
 # ----------------------------------------------------
-train_arr = fileToList1('train.csv')
-dev_arr = fileToList1('dev.csv')
-test_arr = fileToList1('test.csv')
+#train_arr = fileToList1('train.csv')
+#print(train_arr)
+# dev_arr = fileToList1('dev.csv')
+# test_arr = fileToList1('test.csv')
+train_arr, dev_arr, test_arr = trainTestSplit("ner_dataset.csv")
 pos_tag_arr = fileToList2('pos_tags.csv')
 
 pos, transitions = train(train_arr, pos_tag_arr)
@@ -154,7 +166,7 @@ pos = openJson('pos.json')
 transitions = openJson('transitions.json')
 
 
-sentence = "Veenstra is a good professor and fair in grading, assignments are time consuming."
+sentence = "Professor Veenstra is a good professor and fair in grading, assignments are time consuming."
 
 # Printing Results
 # ----------------------------------------------------------------
@@ -168,7 +180,8 @@ print(thing)
 '''
 # Get Accuracy Score
 # ----------------------------------------------------------------
-percent = predict(pos, transitions, test_arr)
-print(percent)
+sampled_dev_arr = sampleDevSet(dev_arr, fraction=0.3)
+percent = predict(pos, transitions, dev_arr)
+print(f"Accuracy on sampled dev set: {percent * 100:.2f}%")
 # ----------------------------------------------------------------
 '''

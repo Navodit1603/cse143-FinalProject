@@ -36,6 +36,31 @@ def fileToList2(filename):
                 appending.append(row[2])
     return fileList
 
+def trainTestSplit(filename):
+    train = []
+    dev = []
+    test = []
+    count = -1
+    with open(filename, 'r', encoding='cp1252') as file:
+        csv_reader = csv.reader(file)
+        next(csv_reader)
+        for row in csv_reader:
+            if len(row[0]) > 0:
+                count += 1
+            if count > 4:
+                count = 0
+            appending = []
+            appending.append(row[0])
+            appending.append(row[1])
+            appending.append(row[2])
+            if count == 1:
+                dev.append(appending)
+            elif count == 3:
+                test.append(appending)
+            else:
+                train.append(appending)
+        print(dev)
+    return np.array(train), np.array(dev), np.array(test)
 
 def saveTrainToJson(filename, dictionary):
     with open(filename, "w") as file:
