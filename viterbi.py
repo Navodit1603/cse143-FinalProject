@@ -102,8 +102,6 @@ def test(pos, transitions, sentence, unseen_word_weight=1e-6, transition_weight=
 
     return best_path
 
-
-
 def predict(partsOfSpeech, transitions, word_arr):
     words = []
     correct_pos = []
@@ -133,55 +131,45 @@ def stringToList(s):
     return re.findall( r'\w+|[^\s\w]+', s)
 
 def sampleDevSet(dev_arr, fraction=0.1, random_seed=42):
-    """
-    Function to sample a fraction of the dev array.
-    :param dev_arr: numpy array of the development set
-    :param fraction: fraction of the array to sample (default is 10%)
-    :param random_seed: seed for reproducibility (default is 42)
-    :return: sampled numpy array
-    """
-    np.random.seed(random_seed)  # Set seed for reproducibility
+    np.random.seed(random_seed)
     sample_size = int(len(dev_arr) * fraction)
     sampled_indices = np.random.choice(len(dev_arr), sample_size, replace=False)
     return dev_arr[sampled_indices]
 
-'''
-# Training the data
-# ----------------------------------------------------
-#train_arr = fileToList1('train.csv')
-#print(train_arr)
-# dev_arr = fileToList1('dev.csv')
-# test_arr = fileToList1('test.csv')
-train_arr, dev_arr, test_arr = trainTestSplit("ner_dataset.csv")
-pos_tag_arr = fileToList2('pos_tags.csv')
+def callTrain():
+    train_arr, dev_arr, test_arr = trainTestSplit("ner_dataset.csv")
+    pos_tag_arr = fileToList2('pos_tags.csv')
+    pos, transitions = train(train_arr, pos_tag_arr)
+    saveTrainToJson('pos.json', pos)
+    saveTrainToJson('transitions.json', transitions)
+    return train_arr, dev_arr, test_arr
 
-pos, transitions = train(train_arr, pos_tag_arr)
+def runSingleSentence(sentence):
+    pos = openJson('pos.json')
+    transitions = openJson('transitions.json')
+    results = test(pos, transitions, stringToList(sentence))
+    pos_results = ""
+    for result in results:
+        pos_results = pos_results + result + ", "
+    print(pos_results)
 
-saveTrainToJson('pos.json', pos)
-saveTrainToJson('transitions.json', transitions)
-# -----------------------------------------------------
-'''
+def runSet(set_num = 1):
+    pos = openJson('pos.json')
+    transitions = openJson('transitions.json')
+    train_arr, dev_arr, test_arr = trainTestSplit("ner_dataset.csv")
+    if set_num == 0:
+        set = train_arr
+    elif set_num == 1:
+        set = dev_arr
+    else:
+        set = test_arr
+    # sampled_dev_arr = sampleDevSet(set, fraction=0.3) # Run if only want fraction of a set.
+    percent = predict(pos, transitions, set)
+    print(f"Accuracy on sampled dev set: {percent * 100:.2f}%")
 
-pos = openJson('pos.json')
-transitions = openJson('transitions.json')
 
 
-sentence = "Professor Veenstra is a good professor and fair in grading, assignments are time consuming."
 
-# Printing Results
-# ----------------------------------------------------------------
-results = test(pos, transitions, stringToList(sentence))
-thing = ""
-for result in results:
-    thing = thing + result + ", "
-print(thing)
-# ----------------------------------------------------------------
+runSingleSentence("Professor Veenstra is a good professor and fair in grading, assignments are time consuming.")
 
-'''
-# Get Accuracy Score
-# ----------------------------------------------------------------
-sampled_dev_arr = sampleDevSet(dev_arr, fraction=0.3)
-percent = predict(pos, transitions, dev_arr)
-print(f"Accuracy on sampled dev set: {percent * 100:.2f}%")
-# ----------------------------------------------------------------
-'''
+
