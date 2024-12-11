@@ -4,6 +4,8 @@ import pathlib
 from typing import Optional
 from gensim.models import Word2Vec
 import nltk.tokenize
+from unidecode import unidecode
+import datetime
 
 
 WIKIPEDIA_SENTENCES_PATH = './data_extracted/sentences/wikipedia/wikipedia_sentences.txt'
@@ -17,11 +19,13 @@ def main():
     print()
 
     print('Starting word2vec for Wikipedia Sentences...')
-    wikipedia_sentences_iterator = WikipediaSentencesIterator(max_lines=500000)
+    # print(datetime.datetime.now())
+    wikipedia_sentences_iterator = WikipediaSentencesIterator(max_lines=7000000)
     with wikipedia_sentences_iterator as wsi:
-        word_embedding = Word2Vec(iter(wsi), vector_size=512, window=64, min_count=1, epochs=1)
+        word_embedding = Word2Vec(sentences=iter(wsi), vector_size=128, window=15, min_count=3, epochs=5)
         word_embedding.save(OUTPUT_PATH)
     print('Finished word2vec for Wikipedia Sentences.')
+    # print(datetime.datetime.now())
     print()
 
     # word_embedding = Word2Vec.load(OUTPUT_PATH)
@@ -44,7 +48,13 @@ class WikipediaSentencesIterator:
             self._in_file.close()
     
     def __iter__(self):
-        return self
+        if not self._in_file:
+            raise Exception('Did not correctly open file for WikipediaSentenceIterator.')
+        else:
+            self._in_file.seek(0)
+            self._current_line = ''
+            self._current_line_num = 0
+            return self
 
     def __next__(self):
         if self._current_line_num >= self._max_lines:
@@ -57,7 +67,10 @@ class WikipediaSentencesIterator:
                     raise Exception('Did not correctly open file for WikipediaSentenceIterator.')
                 else:
                     self._current_line = self._in_file.readline()
+                    self._current_line = unidecode(self._current_line).lower()
+
                     self._current_line_num += 1
+
                     return nltk.tokenize.word_tokenize(self._current_line)
 
 
