@@ -1,18 +1,34 @@
 
+"""
+---How To Use---
+
+Import:
+ - from category_classifier import CategoryClassifier
+
+Use:
+ - cc = CategoryClassifier(quiet=True)
+ - cc.classify('dog')
+
+The classify method will return either a string or None if there is no category it fits
+"""
+
 from typing import Optional
 from gensim.models import Word2Vec
 import numpy as np
+from unidecode import unidecode
 
 
 WORD_EMBEDDING_PATH = './data_extracted/word2vec/wikipedia_embedding.model'
 
 CATEGORIES = {
-    'body_parts':
-        ['arm', 'leg', 'foot', 'hand', 'head', 'body', 'eye', 'ear', 'mouth'],
-    'animals':
+    'Body Part':
+        ['arm', 'leg', 'foot', 'hand', 'head', 'body', 'eye', 'ear', 'mouth', 'teeth', 'elbow', 'shoulder'],
+    'Animal':
         ['dog', 'cat', 'bird', 'fish', 'wolf', 'chicken', 'cow', 'deer', 'horse', 'pig', 'lion', 'tiger', 'wasp', 'bee', 'snake', 'bear', 'panda', 'sheep', 'goat'],
-    'sports':
+    'Sport':
         ['basketball', 'volleyball', 'soccer', 'football', 'tennis', 'badminton', 'boxing', 'rugby', 'running', 'swimming'],
+    'Language':
+        ['spanish', 'russian', 'french', 'portuguese', 'chinese', 'japanese', 'hindi', 'korean', 'vietnamese', 'german']
 }
 
 class CategoryClassifier:
@@ -58,6 +74,8 @@ class CategoryClassifier:
             self._category_adjuster_weights[category] = adjuster_weights
 
     def classify(self, word_in_question: str, cutoff: float=0.4) -> Optional[str]:
+        word_in_question = unidecode(word_in_question).lower()
+
         max_found = 'NoneFound'
         max_found_val = float('-inf')
 

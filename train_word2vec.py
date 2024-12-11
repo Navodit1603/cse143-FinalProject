@@ -19,13 +19,13 @@ def main():
     print()
 
     print('Starting word2vec for Wikipedia Sentences...')
-    print(datetime.datetime.now())
+    # print(datetime.datetime.now())
     wikipedia_sentences_iterator = WikipediaSentencesIterator(max_lines=7000000)
     with wikipedia_sentences_iterator as wsi:
         word_embedding = Word2Vec(sentences=iter(wsi), vector_size=128, window=15, min_count=3, epochs=5)
         word_embedding.save(OUTPUT_PATH)
     print('Finished word2vec for Wikipedia Sentences.')
-    print(datetime.datetime.now())
+    # print(datetime.datetime.now())
     print()
 
     # word_embedding = Word2Vec.load(OUTPUT_PATH)
