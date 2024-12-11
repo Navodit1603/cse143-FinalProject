@@ -24,14 +24,6 @@ pos_names = {
 
 punctuation = ['.', ',', ':', '!', '?']
 
-# read rate my professor data
-path = "./data_extracted/sentences/rate_my_professor/rate_my_professor.csv"
-data = pd.read_csv(path)
-reviews = data['comments']
-names = data['professor_name']
-schools = data['school_name']
-scores = data['star_rating']
-
 def sentiment_analysis(revs, scores, candidates):
     positivity = {}
     i = 0
@@ -47,7 +39,7 @@ def sentiment_analysis(revs, scores, candidates):
                 # record sentiment
                 positivity[tok] = positivity.get(tok, 0) + score
         i += 1
-    # normalize
+    # normalize to a number between -1 and 1
     lower_bound = min(positivity.values())
     upper_bound = max(positivity.values())
     bound = upper_bound - lower_bound
@@ -67,20 +59,20 @@ def tf(t, d):
             count += 1
     return count
 
-def idf(t):
+def idf(t, doc_set):
     # computes inverse document frequency for term t in document set
     t = t.lower()
-    count = 0
-    for i in range(len(reviews)):
-        if t in str(reviews[i]).lower():
+    count = 1
+    for i in range(len(doc_set)):
+        if t in str(doc_set[i]).lower():
             count += 1
-    return np.log(len(reviews) / count)
+    return np.log(len(doc_set) / count)
 
-def tf_idf(t, d):
+def tf_idf(t, d, doc_set):
     # computes tf-idf for term t in document d
-    return tf(t, d) * idf(t)
+    return tf(t, d) * idf(t, doc_set)
 
-def replace_words(text, tagged_line, replaceable, sentiment):
+def replace_words(text, tagged_line, replaceable, sentiment, doc_set):
     # text: the original input string
     # tagged_line: a list of tuples containing (word, pos) for each token in the input
     # replaceable: a list of tuples (word, pos) for each pos in the set of replaceable pos
@@ -90,8 +82,10 @@ def replace_words(text, tagged_line, replaceable, sentiment):
         importance = {}
         # importance determined by tf_idf and sentiment (highly positive or highly negative)
         for (word, pos) in replaceable:
-            importance[word] = tf_idf(word, tagged_line) * np.abs(sentiment[word])
-
+            if sentiment:
+                importance[word] = tf_idf(word, tagged_line, doc_set) * np.abs(sentiment[word])
+            else:
+                importance[word] = tf_idf(word, tagged_line, doc_set)
         to_replace = []
         # compile a list of all replaceable words in each sentence
         # pick approx 40% of words with the highest importance to replace
@@ -121,40 +115,94 @@ def replace_words(text, tagged_line, replaceable, sentiment):
 
     return tagged_line
 
-def __main__():
-    # pick random review
-    text = "No Comments"
-    while text == "No Comments":
-        rev_idx = np.floor(rand.random() * len(reviews))
-        text = reviews[rev_idx]
-
-    professor = names[rev_idx]
-    school = schools[rev_idx]
-    score = scores[rev_idx]
-
+def rebuild_text(tags):
+    # Rebuilds the text from tagged words.
     output = ""
-
-    tokens = tk.word_tokenize(text)
-    tagged_line = pos_tag(tokens)
-    replaceable = []
-    for i in range(len(tagged_line)):
-        if tagged_line[i][1] in madlib_pos:
-            replaceable.append(tagged_line[i])
-
-    madlib_candidates = [replaceable[i][0] for i in range(len(replaceable))]
-    sentiment = sentiment_analysis(reviews, scores, madlib_candidates)
-    tags = replace_words(text, tagged_line, replaceable, sentiment)
-
-    # rebuild text with new tags
-    prev_token = None
-    for i in range(len(tags)):
-        if prev_token is not None and tags[i][0] not in punctuation and "'" not in tags[i][0]:
+    skip_space = False
+    for i, (token, _) in enumerate(tags):
+        # Check if the next token is part of a contraction
+        if token:
+            skip_space = token[0] == "'"
+        if i > 0 and not skip_space and token not in punctuation:
             output += ' '
-        output += tags[i][0]
-        prev_token = tags[i][0]
+        # Remove escape characters from apostrophes
+        token = token.replace("\\", "")
+        output += token
+        
+    return output
 
-    #print("Original:\n", text)
-    #print("Madlib:\n", output)
-    print("\n{0}, {1}:\n{2}\n{3}/5".format(professor, school, output, score))
+def __main__():
+    # Ask the user for the type of MadLib
+    data_type = input("What type of MadLib? (rmp, aesop, roc): ").strip().lower()
+
+    if data_type == "rmp":
+        # read rate my professor data
+        path = "./data_extracted/sentences/rate_my_professor/rate_my_professor.csv"
+        data = pd.read_csv(path)
+        reviews = data['comments']
+        names = data['professor_name']
+        schools = data['school_name']
+        scores = data['star_rating']
+        # pick random review
+        text = "No Comments"
+        while text == "No Comments":
+            rev_idx = rand.randint(0, len(reviews) - 1)
+            text = reviews[rev_idx]
+
+        professor = names[rev_idx]
+        school = schools[rev_idx]
+        score = scores[rev_idx]
+
+        output = ""
+
+        tokens = tk.word_tokenize(text)
+        tagged_line = pos_tag(tokens)
+
+        replaceable = [(word, tag) for word, tag in tagged_line if tag in madlib_pos]
+        madlib_candidates = [word for word, _ in replaceable]
+
+        sentiment = sentiment_analysis(reviews, scores, madlib_candidates)
+        tags = replace_words(text, tagged_line, replaceable, sentiment, reviews)
+
+        # rebuild text with new tags
+        output = rebuild_text(tags)
+
+        print(f"\n{professor}, {school}:\n{output}\n{score}/5")
+
+    elif data_type in ["aesop", "roc"]:
+        # Determine the correct file path
+        path = "./data_extracted/sentences/aesop_fables/aesop_fables.txt" if data_type == "aesop" else "./data_extracted/sentences/roc_stories/roc_stories.txt"
+        with open(path, 'r') as file:
+            stories = [line for line in file.read().splitlines()]
+        # Pick a random story
+        text = stories[rand.randint(0, len(stories) - 1)]
+
+        if data_type == "aesop":
+            # Limit text to a maximum of 5 sentences
+            sentences = text.split('. ')
+            text = '. '.join(sentences[:5]) + ('.' if len(sentences) > 5 else '')
+        
+        # Tokenize and tag text
+        tokens = tk.word_tokenize(text)
+        tagged_line = pos_tag(tokens)
+
+        # Identify replaceable words based on POS tags
+        replaceable = [word for word, tag in tagged_line if tag in madlib_pos]
+        replaceable = []
+        for i in range(len(tagged_line)):
+            if tagged_line[i][1] in madlib_pos:
+                replaceable.append(tagged_line[i])
+
+        madlib_candidates = [replaceable[i][0] for i in range(len(replaceable))]
+        tags = replace_words(text, tagged_line, replaceable, None, stories)
+        # rebuild text with new tags
+        output = ""
+        prev_token = None
+        for i in range(len(tags)):
+            if prev_token is not None and tags[i][0] not in punctuation and "'" not in tags[i][0]:
+                output += ' '
+            output += tags[i][0]
+            prev_token = tags[i][0]
+        print(output)
 
 __main__()
