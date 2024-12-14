@@ -32,7 +32,52 @@ scores = data['star_rating']
 
 # Placeholder sentiment_analysis function
 def sentiment_analysis(revs, scores, candidates):
-    return {}
+    positivity = {}
+    i = 0
+    while i < len(revs):
+        review = str(revs[i])
+        if review == "No Comments":
+            i += 1
+            continue
+        score = round(float(scores[i]), 1)
+        tokens = tk.word_tokenize(review)
+        for tok in tokens:
+            if tok in candidates:
+                # record sentiment
+                positivity[tok] = positivity.get(tok, 0) + score
+        i += 1
+    # normalize to a number between -1 and 1
+    lower_bound = min(positivity.values())
+    upper_bound = max(positivity.values())
+    bound = upper_bound - lower_bound
+    for key in positivity.keys():
+        if positivity[key] > 0 and bound > 0:
+            positivity[key] -= lower_bound
+            positivity[key] /= bound / 2
+            positivity[key] -= 1
+    return positivity
+
+def tf(t, d):
+    # computes term frequency of term t in document d containing tuples of (term, pos)
+    t = t.lower()
+    count = 0
+    for (word, _) in d:
+        if word.lower() == t:
+            count += 1
+    return count
+
+def idf(t, doc_set):
+    # computes inverse document frequency for term t in document set
+    t = t.lower()
+    count = 1
+    for i in range(len(doc_set)):
+        if t in str(doc_set[i]).lower():
+            count += 1
+    return np.log(len(doc_set) / count)
+
+def tf_idf(t, d, doc_set):
+    # computes tf-idf for term t in document d
+    return tf(t, d) * idf(t, doc_set)
 
 # Modify replace_words to interactively replace parts of speech
 def replace_words(text, tagged_line, replaceable, sentiment, replacements):
@@ -58,7 +103,24 @@ def replace_words(text, tagged_line, replaceable, sentiment, replacements):
 
     return tagged_line
 
-# Function to select a random review and process the Madlib
+def get_pos_names():
+    # Randomly select a review
+    text = "No Comments"
+    while text == "No Comments":
+        rev_idx = np.floor(rand.random() * len(reviews))
+        text = reviews[rev_idx]
+
+    tokens = tk.word_tokenize(text)
+    tagged_line = pos_tag(tokens)
+
+    # Dynamically generate pos_names from the tagged sentence
+    dynamic_pos_names = {}
+    for word, tag in tagged_line:
+        if tag in madlib_pos and tag not in dynamic_pos_names:
+            dynamic_pos_names[tag] = pos_labels.get(tag, tag)
+
+    return dynamic_pos_names
+
 def generate_madlib(replacements):
     # Randomly select a review
     text = "No Comments"
@@ -72,12 +134,6 @@ def generate_madlib(replacements):
 
     tokens = tk.word_tokenize(text)
     tagged_line = pos_tag(tokens)
-
-    # Dynamically generate pos_names from the tagged sentence
-    dynamic_pos_names = {}
-    for word, tag in tagged_line:
-        if tag in madlib_pos and tag not in dynamic_pos_names:
-            dynamic_pos_names[tag] = pos_labels.get(tag, tag)
 
     replaceable = [tagged_line[i] for i in range(len(tagged_line)) if tagged_line[i][1] in madlib_pos]
 
@@ -94,4 +150,6 @@ def generate_madlib(replacements):
 
     output = f"{professor}, {school}:\n{output}\n{score}/5"
 
-    return dynamic_pos_names, output
+    return output
+
+
